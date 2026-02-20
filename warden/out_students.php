@@ -7,33 +7,29 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
+$current_time = date("Y-m-d H:i:s");
+
 $query = "SELECT hostel_leaves.*, users.name 
           FROM hostel_leaves
           JOIN users ON hostel_leaves.student_id = users.id
-          WHERE hostel_leaves.status = 'Pending'
-          ORDER BY hostel_leaves.applied_at DESC";
+          WHERE hostel_leaves.status = 'Approved'
+          AND '$current_time' BETWEEN hostel_leaves.from_datetime 
+          AND hostel_leaves.to_datetime";
 
 $result = mysqli_query($conn, $query);
 ?>
 
-<h2>Pending Leave Requests</h2>
+<h2>Students Currently Outside</h2>
 
 <?php
 if (mysqli_num_rows($result) == 0) {
-    echo "No pending leave requests.";
+    echo "No students currently outside.";
 } else {
-
     while ($row = mysqli_fetch_assoc($result)) {
         echo "<hr>";
         echo "Student: " . $row["name"] . "<br>";
-        echo "Type: " . $row["leave_type"] . "<br>";
         echo "From: " . $row["from_datetime"] . "<br>";
         echo "To: " . $row["to_datetime"] . "<br>";
-        echo "Reason: " . $row["reason"] . "<br>";
-        echo "Status: " . $row["status"] . "<br><br>";
-
-        echo "<a href='approve_leave.php?id=" . $row["id"] . "&action=approve'>Approve</a> | ";
-        echo "<a href='approve_leave.php?id=" . $row["id"] . "&action=reject'>Reject</a>";
     }
 }
 ?>

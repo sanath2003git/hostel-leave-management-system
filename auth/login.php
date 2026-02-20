@@ -1,25 +1,30 @@
 <?php
 session_start();
-
-$users = [
-    "student1" => ["password" => "1234", "role" => "student"],
-    "warden1" => ["password" => "1234", "role" => "warden"]
-];
+include("../config/db.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-    if (isset($users[$username]) && $users[$username]["password"] == $password) {
-        $_SESSION["username"] = $username;
-        $_SESSION["role"] = $users[$username]["role"];
+    $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
+    $result = mysqli_query($conn, $query);
 
-        if ($_SESSION["role"] == "student") {
+    if (mysqli_num_rows($result) == 1) {
+
+        $user = mysqli_fetch_assoc($result);
+
+        $_SESSION["user_id"] = $user["id"];
+        $_SESSION["username"] = $user["username"];
+        $_SESSION["role"] = $user["role"];
+
+        if ($user["role"] == "student") {
             header("Location: ../student/dashboard.php");
         } else {
             header("Location: ../warden/dashboard.php");
         }
         exit();
+
     } else {
         $error = "Invalid username or password";
     }
@@ -32,7 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Login</title>
 </head>
 <body>
-<h2>Login</h2>
+
+<h2>Hostel Leave Management System</h2>
 
 <?php if(isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
 
@@ -41,5 +47,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     Password: <input type="password" name="password" required><br><br>
     <button type="submit">Login</button>
 </form>
+
 </body>
 </html>

@@ -1,5 +1,6 @@
 <?php
 include("../includes/auth_check.php");
+include("../config/db.php");
 
 if ($_SESSION["role"] != "warden") {
     echo "Access Denied";
@@ -8,16 +9,23 @@ if ($_SESSION["role"] != "warden") {
 
 if (isset($_GET["id"]) && isset($_GET["action"])) {
 
-    $id = $_GET["id"];
+    $leave_id = $_GET["id"];
     $action = $_GET["action"];
 
-    if (isset($_SESSION["leaves"][$id])) {
-        if ($action == "approve") {
-            $_SESSION["leaves"][$id]["status"] = "Approved";
-        } elseif ($action == "reject") {
-            $_SESSION["leaves"][$id]["status"] = "Rejected";
-        }
+    if ($action == "approve") {
+        $status = "Approved";
+    } elseif ($action == "reject") {
+        $status = "Rejected";
+    } else {
+        header("Location: view_requests.php");
+        exit();
     }
+
+    $query = "UPDATE hostel_leaves 
+              SET status='$status' 
+              WHERE id='$leave_id'";
+
+    mysqli_query($conn, $query);
 }
 
 header("Location: view_requests.php");
