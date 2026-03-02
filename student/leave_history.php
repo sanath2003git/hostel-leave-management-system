@@ -9,34 +9,183 @@ if ($_SESSION["role"] != "student") {
 
 $student_id = $_SESSION["user_id"];
 
-$query = "SELECT * FROM hostel_leaves 
-          WHERE student_id = '$student_id'
-          ORDER BY applied_at DESC";
+$stmt = $conn->prepare("SELECT * FROM hostel_leaves 
+                        WHERE student_id = ?
+                        ORDER BY applied_at DESC");
 
-$result = mysqli_query($conn, $query);
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Leave History</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background: linear-gradient(135deg,#dcdde1 0%,#eceef2 40%,#d6d8de 100%);
+    padding:120px 60px 60px 60px;
+}
+
+.topbar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:70px;
+    background:#f6f6f8;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 60px;
+    box-shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+
+.topbar a{
+    text-decoration:none;
+    color:#333;
+    font-weight:500;
+}
+
+.dashboard{
+    max-width:1000px;
+    margin:auto;
+    padding:60px;
+    background:#fff;
+    border-radius:22px;
+    box-shadow:
+        0 30px 80px rgba(0,0,0,0.12),
+        0 10px 25px rgba(0,0,0,0.08);
+}
+
+h2{
+    font-size:28px;
+    margin-bottom:40px;
+}
+
+.table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.table th{
+    text-align:left;
+    padding:15px;
+    font-size:14px;
+    color:#555;
+    border-bottom:1px solid #eee;
+}
+
+.table td{
+    padding:18px 15px;
+    border-bottom:1px solid #f0f0f0;
+    font-size:14px;
+}
+
+.table tr:hover{
+    background:#fafafa;
+}
+
+.badge{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.pending{
+    background:#fff3cd;
+    color:#856404;
+}
+
+.approved{
+    background:#e6f4ea;
+    color:#1e7e34;
+}
+
+.rejected{
+    background:#fdecea;
+    color:#c82333;
+}
+
+.back-link{
+    display:inline-block;
+    margin-top:30px;
+    text-decoration:none;
+    color:#333;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+    <div>Hostel Leave System</div>
+    <div>
+        <?php echo $_SESSION["username"]; ?> |
+        <a href="../auth/logout.php">Logout</a>
+    </div>
+</div>
+
+<div class="dashboard">
 
 <h2>Leave History</h2>
 
-<?php
-if (mysqli_num_rows($result) == 0) {
-    echo "No leave history found.";
-} else {
+<?php if ($result->num_rows == 0): ?>
+    No leave history found.
+<?php else: ?>
 
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo "<hr>";
-        echo "Type: " . $row["leave_type"] . "<br>";
-        echo "From: " . $row["from_datetime"] . "<br>";
-        echo "To: " . $row["to_datetime"] . "<br>";
-        echo "Reason: " . $row["reason"] . "<br>";
-        echo "Status: <strong>" . $row["status"] . "</strong><br>";
+<table class="table">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Status</th>
+            <th>Remarks</th>
+        </tr>
+    </thead>
+    <tbody>
 
-        if (!empty($row["remarks"])) {
-            echo "Remarks: " . $row["remarks"] . "<br>";
-        }
-    }
-}
-?>
+    <?php while ($row = $result->fetch_assoc()): 
+        $status = strtolower($row["status"]);
+    ?>
+        <tr>
+            <td><?php echo htmlspecialchars($row["leave_type"]); ?></td>
+            <td><?php echo htmlspecialchars($row["from_datetime"]); ?></td>
+            <td><?php echo htmlspecialchars($row["to_datetime"]); ?></td>
+            <td>
+                <span class="badge <?php echo $status; ?>">
+                    <?php echo htmlspecialchars($row["status"]); ?>
+                </span>
+            </td>
+            <td>
+                <?php echo !empty($row["remarks"]) 
+                        ? htmlspecialchars($row["remarks"]) 
+                        : "-"; ?>
+            </td>
+        </tr>
+    <?php endwhile; ?>
 
-<br><br>
-<a href="dashboard.php">Back</a>
+    </tbody>
+</table>
+
+<?php endif; ?>
+
+<a href="dashboard.php" class="back-link">← Back to Dashboard</a>
+
+</div>
+
+</body>
+</html>
