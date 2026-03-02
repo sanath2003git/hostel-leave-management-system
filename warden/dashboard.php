@@ -11,4 +11,6 @@ if ($_SESSION["role"] != "warden") {
 <p>Welcome, <?php echo $_SESSION["username"]; ?></p>
 
 <a href="view_requests.php">View Leave Requests</a><br><br>
+<a href="out_students.php">View Out Students</a><br><br>
+<a href="reports.php">View Reports</a><br><br>
 <a href="../auth/logout.php">Logout</a>
