@@ -9,32 +9,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST["username"]);
     $password = trim($_POST["password"]);
 
-    // JOIN users and roles table
+    // Secure prepared statement with JOIN
     $stmt = $conn->prepare("
         SELECT users.*, roles.role_name 
         FROM users 
         JOIN roles ON users.role_id = roles.id 
         WHERE users.username = ?
+        LIMIT 1
     ");
 
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 1) {
+    if ($result->num_rows === 1) {
 
         $user = $result->fetch_assoc();
 
-        // Since your passwords are plain text (1234)
-        if ($password === $user["password"]) {
+        // 🔐 SECURE PASSWORD CHECK
+        if (password_verify($password, $user["password"])) {
+
+            // Regenerate session ID (security best practice)
+            session_regenerate_id(true);
 
             $_SESSION["user_id"] = $user["id"];
             $_SESSION["username"] = $user["username"];
             $_SESSION["role"] = $user["role_name"];
 
-            if ($user["role_name"] == "student") {
+            if ($user["role_name"] === "student") {
                 header("Location: ../student/dashboard.php");
-            } else {
+            } elseif ($user["role_name"] === "warden") {
                 header("Location: ../warden/dashboard.php");
             }
             exit();
@@ -182,7 +186,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <p>Please enter your details.</p>
 
         <?php if(!empty($error)): ?>
-            <div class="error-msg"><?php echo $error; ?></div>
+            <div class="error-msg"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
 
         <form method="POST">

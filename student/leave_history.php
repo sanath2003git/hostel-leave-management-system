@@ -9,9 +9,15 @@ if ($_SESSION["role"] != "student") {
 
 $student_id = $_SESSION["user_id"];
 
-$stmt = $conn->prepare("SELECT * FROM hostel_leaves 
-                        WHERE student_id = ?
-                        ORDER BY applied_at DESC");
+/* ✅ JOIN leave_types */
+$stmt = $conn->prepare("
+    SELECT hostel_leaves.*, leave_types.type_name
+    FROM hostel_leaves
+    JOIN leave_types 
+    ON hostel_leaves.leave_type_id = leave_types.id
+    WHERE hostel_leaves.student_id = ?
+    ORDER BY hostel_leaves.applied_at DESC
+");
 
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
@@ -162,14 +168,18 @@ h2{
         $status = strtolower($row["status"]);
     ?>
         <tr>
-            <td><?php echo htmlspecialchars($row["leave_type"]); ?></td>
+            <!-- ✅ FIXED HERE -->
+            <td><?php echo htmlspecialchars($row["type_name"]); ?></td>
+
             <td><?php echo htmlspecialchars($row["from_datetime"]); ?></td>
             <td><?php echo htmlspecialchars($row["to_datetime"]); ?></td>
+
             <td>
                 <span class="badge <?php echo $status; ?>">
                     <?php echo htmlspecialchars($row["status"]); ?>
                 </span>
             </td>
+
             <td>
                 <?php echo !empty($row["remarks"]) 
                         ? htmlspecialchars($row["remarks"]) 

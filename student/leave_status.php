@@ -9,10 +9,16 @@ if ($_SESSION["role"] != "student") {
 
 $student_id = $_SESSION["user_id"];
 
-$stmt = $conn->prepare("SELECT * FROM hostel_leaves 
-                        WHERE student_id = ?
-                        ORDER BY applied_at DESC
-                        LIMIT 1");
+/* ✅ FIXED QUERY WITH JOIN */
+$stmt = $conn->prepare("
+    SELECT hostel_leaves.*, leave_types.type_name
+    FROM hostel_leaves
+    JOIN leave_types 
+        ON hostel_leaves.leave_type_id = leave_types.id
+    WHERE hostel_leaves.student_id = ?
+    ORDER BY hostel_leaves.applied_at DESC
+    LIMIT 1
+");
 
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
@@ -39,7 +45,6 @@ body{
     padding:120px 60px 60px 60px;
 }
 
-/* Topbar */
 .topbar{
     position:fixed;
     top:0;
@@ -60,7 +65,6 @@ body{
     font-weight:500;
 }
 
-/* Container */
 .dashboard{
     max-width:900px;
     margin:auto;
@@ -77,7 +81,6 @@ h2{
     margin-bottom:40px;
 }
 
-/* Status Card */
 .status-card{
     padding:35px;
     border-radius:18px;
@@ -96,7 +99,6 @@ h2{
     font-weight:600;
 }
 
-/* Status Badge */
 .badge{
     display:inline-block;
     padding:6px 12px;
@@ -155,19 +157,23 @@ h2{
 <div class="status-card">
 
     <div class="status-row">
-        <strong>Leave Type:</strong> <?php echo htmlspecialchars($row["leave_type"]); ?>
+        <strong>Leave Type:</strong> 
+        <?php echo htmlspecialchars($row["type_name"]); ?>
     </div>
 
     <div class="status-row">
-        <strong>From:</strong> <?php echo htmlspecialchars($row["from_datetime"]); ?>
+        <strong>From:</strong> 
+        <?php echo htmlspecialchars($row["from_datetime"]); ?>
     </div>
 
     <div class="status-row">
-        <strong>To:</strong> <?php echo htmlspecialchars($row["to_datetime"]); ?>
+        <strong>To:</strong> 
+        <?php echo htmlspecialchars($row["to_datetime"]); ?>
     </div>
 
     <div class="status-row">
-        <strong>Reason:</strong> <?php echo htmlspecialchars($row["reason"]); ?>
+        <strong>Reason:</strong> 
+        <?php echo htmlspecialchars($row["reason"]); ?>
     </div>
 
     <div class="status-row">

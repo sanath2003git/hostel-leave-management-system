@@ -7,32 +7,111 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
-$current_time = date("Y-m-d H:i:s");
+$stmt = $conn->prepare("
+    SELECT users.name,
+           student_profiles.department,
+           student_profiles.room_number,
+           hostel_leaves.from_datetime,
+           hostel_leaves.to_datetime
+    FROM hostel_leaves
+    JOIN users ON hostel_leaves.student_id = users.id
+    JOIN student_profiles ON users.id = student_profiles.user_id
+    WHERE hostel_leaves.status = 'Approved'
+      AND NOW() BETWEEN hostel_leaves.from_datetime AND hostel_leaves.to_datetime
+    ORDER BY hostel_leaves.from_datetime ASC
+");
 
-$query = "SELECT hostel_leaves.*, users.name 
-          FROM hostel_leaves
-          JOIN users ON hostel_leaves.student_id = users.id
-          WHERE hostel_leaves.status = 'Approved'
-          AND '$current_time' BETWEEN hostel_leaves.from_datetime 
-          AND hostel_leaves.to_datetime";
-
-$result = mysqli_query($conn, $query);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
-<h2>Students Currently Outside</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Students Currently Outside</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f4f4f4;
+        }
 
-<?php
-if (mysqli_num_rows($result) == 0) {
-    echo "No students currently outside.";
-} else {
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo "<hr>";
-        echo "Student: " . $row["name"] . "<br>";
-        echo "From: " . $row["from_datetime"] . "<br>";
-        echo "To: " . $row["to_datetime"] . "<br>";
-    }
-}
-?>
+        h2 {
+            margin-bottom: 20px;
+        }
 
-<br><br>
-<a href="dashboard.php">Back</a>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #333;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            background: #555;
+            color: white;
+            padding: 8px 12px;
+            text-decoration: none;
+        }
+
+        .status-box {
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Students Currently Outside Hostel</h2>
+
+<?php if ($result->num_rows == 0): ?>
+
+<div class="status-box">
+    No students are currently outside.
+</div>
+
+<?php else: ?>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Room</th>
+        <th>From</th>
+        <th>To</th>
+    </tr>
+
+    <?php while ($row = $result->fetch_assoc()): ?>
+    <tr>
+        <td><?php echo htmlspecialchars($row["name"]); ?></td>
+        <td><?php echo htmlspecialchars($row["department"]); ?></td>
+        <td><?php echo htmlspecialchars($row["room_number"]); ?></td>
+        <td><?php echo htmlspecialchars($row["from_datetime"]); ?></td>
+        <td><?php echo htmlspecialchars($row["to_datetime"]); ?></td>
+    </tr>
+    <?php endwhile; ?>
+
+</table>
+
+<?php endif; ?>
+
+<a class="back-btn" href="dashboard.php">Back to Dashboard</a>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 02, 2026 at 06:13 PM
+-- Generation Time: Mar 03, 2026 at 07:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `leave_managment`
+-- Database: `hostel_leave_db`
 --
 
 -- --------------------------------------------------------
@@ -43,7 +43,7 @@ CREATE TABLE `hostel_leaves` (
 --
 
 INSERT INTO `hostel_leaves` (`id`, `student_id`, `leave_type_id`, `from_datetime`, `to_datetime`, `reason`, `status`, `applied_at`) VALUES
-(1, 2, 8, '2026-03-11 12:41:00', '2026-03-02 13:41:00', 'sick', 'Pending', '2026-03-02 17:10:13');
+(9, 6, 8, '2026-03-03 16:10:00', '2026-03-04 05:09:00', 'group study', 'Approved', '2026-03-03 17:40:31');
 
 -- --------------------------------------------------------
 
@@ -118,6 +118,13 @@ CREATE TABLE `student_profiles` (
   `room_number` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `student_profiles`
+--
+
+INSERT INTO `student_profiles` (`id`, `user_id`, `register_number`, `department`, `year`, `room_number`) VALUES
+(2, 6, '2520', 'mca', 2025, '1011');
+
 -- --------------------------------------------------------
 
 --
@@ -141,8 +148,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `role_id`, `name`, `username`, `password`, `email`, `parent_email`, `teacher_email`, `created_at`) VALUES
-(1, 2, 'Warden', 'warden1', '1234', NULL, NULL, NULL, '2026-03-02 13:04:29'),
-(2, 1, 'Student1', 'student1', '1234', NULL, NULL, NULL, '2026-03-02 16:52:15');
+(3, 2, 'Main Warden', 'warden', '$2y$10$93Ul/A1Q2WdhaPnuGZMzJebt.1pCh.uprf/0DvBRbxclxx9l6rkSe', NULL, NULL, NULL, '2026-03-03 13:31:52'),
+(6, 1, 'sanath', 'sanath', '$2y$10$ttEqidY.X5eZGcETjSHliuH61oIloxTsaXCqWT1EaAqFNkRhgnIGG', 'sanathsreekumar18@gmail.com', 'brianpeterbernard5665@gmail.com', '2515@tkmce.ac.in', '2026-03-03 17:38:47');
 
 --
 -- Indexes for dumped tables
@@ -200,7 +207,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `hostel_leaves`
 --
 ALTER TABLE `hostel_leaves`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `leave_types`
@@ -224,13 +231,13 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables

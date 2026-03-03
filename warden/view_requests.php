@@ -7,11 +7,17 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
-$query = "SELECT hostel_leaves.*, users.name 
-          FROM hostel_leaves
-          JOIN users ON hostel_leaves.student_id = users.id
-          WHERE hostel_leaves.status = 'Pending'
-          ORDER BY hostel_leaves.applied_at DESC";
+/* ✅ JOIN leave_types */
+$query = "
+    SELECT hostel_leaves.*, users.name, leave_types.type_name
+    FROM hostel_leaves
+    JOIN users 
+        ON hostel_leaves.student_id = users.id
+    JOIN leave_types 
+        ON hostel_leaves.leave_type_id = leave_types.id
+    WHERE hostel_leaves.status = 'Pending'
+    ORDER BY hostel_leaves.applied_at DESC
+";
 
 $result = mysqli_query($conn, $query);
 ?>
@@ -24,13 +30,15 @@ if (mysqli_num_rows($result) == 0) {
 } else {
 
     while ($row = mysqli_fetch_assoc($result)) {
+
         echo "<hr>";
-        echo "Student: " . $row["name"] . "<br>";
-        echo "Type: " . $row["leave_type"] . "<br>";
-        echo "From: " . $row["from_datetime"] . "<br>";
-        echo "To: " . $row["to_datetime"] . "<br>";
-        echo "Reason: " . $row["reason"] . "<br>";
-        echo "Status: " . $row["status"] . "<br><br>";
+
+        echo "<strong>Student:</strong> " . htmlspecialchars($row["name"]) . "<br>";
+        echo "<strong>Leave Type:</strong> " . htmlspecialchars($row["type_name"]) . "<br>";
+        echo "<strong>From:</strong> " . htmlspecialchars($row["from_datetime"]) . "<br>";
+        echo "<strong>To:</strong> " . htmlspecialchars($row["to_datetime"]) . "<br>";
+        echo "<strong>Reason:</strong> " . htmlspecialchars($row["reason"]) . "<br>";
+        echo "<strong>Status:</strong> " . htmlspecialchars($row["status"]) . "<br><br>";
 
         echo "<a href='approve_leave.php?id=" . $row["id"] . "&action=approve'>Approve</a> | ";
         echo "<a href='approve_leave.php?id=" . $row["id"] . "&action=reject'>Reject</a>";
