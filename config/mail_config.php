@@ -20,10 +20,10 @@ function sendMail($to, $subject, $body)
         $mail->SMTPAuth   = true;
 
         // 🔹 Replace with your project Gmail
-        $mail->Username   = 'hostelleavesystem2026@gmail.com';
+        $mail->Username   = 'yourprojectemail@gmail.com';
 
         // 🔹 Replace with your 16-digit app password (NO SPACES)
-        $mail->Password   = 'dqexfjwnhtoyymko';
+        $mail->Password   = 'password';
 
         $mail->SMTPSecure = 'tls';
         $mail->Port       = 587;
