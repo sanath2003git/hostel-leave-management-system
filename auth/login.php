@@ -2,14 +2,21 @@
 session_start();
 include("../config/db.php");
 
-$error = "";  
+$error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $username = trim($_POST["username"]);
     $password = trim($_POST["password"]);
 
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+    // JOIN users and roles table
+    $stmt = $conn->prepare("
+        SELECT users.*, roles.role_name 
+        FROM users 
+        JOIN roles ON users.role_id = roles.id 
+        WHERE users.username = ?
+    ");
+
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -18,13 +25,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $user = $result->fetch_assoc();
 
-        if (password_verify($password, $user["password"])) {
+        // Since your passwords are plain text (1234)
+        if ($password === $user["password"]) {
 
             $_SESSION["user_id"] = $user["id"];
             $_SESSION["username"] = $user["username"];
-            $_SESSION["role"] = $user["role"];
+            $_SESSION["role"] = $user["role_name"];
 
-            if ($user["role"] == "student") {
+            if ($user["role_name"] == "student") {
                 header("Location: ../student/dashboard.php");
             } else {
                 header("Location: ../warden/dashboard.php");
@@ -74,7 +82,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
 
-        /* LEFT SIDE */
         .login-left {
             width: 50%;
             padding: 60px;
@@ -138,33 +145,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background: #333;
         }
 
-        .extra-text {
-            margin-top: 20px;
+        .error-msg {
+            color: red;
             font-size: 13px;
-            color: #555;
-        }
-
-        .extra-text a {
-            font-weight: 500;
-            text-decoration: none;
-            color: #000;
+            margin-bottom: 15px;
         }
 
         .login-right {
             width: 50%;
             background: url('../assets/images/tkm.jpg') center/cover no-repeat;
-        }
-
-        .feature {
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #ccc;
-        }
-
-        .error-msg {
-            color: red;
-            font-size: 13px;
-            margin-bottom: 15px;
         }
 
         @media(max-width: 900px) {
@@ -187,7 +176,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="login-wrapper">
 
-    <!-- LEFT -->
     <div class="login-left">
 
         <h2>Welcome back</h2>
@@ -218,12 +206,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         </form>
 
-        
-
     </div>
 
-    <!-- RIGHT -->
-<div class="login-right"></div>
+    <div class="login-right"></div>
+
+</div>
 
 </body>
 </html>
