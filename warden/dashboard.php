@@ -15,4 +15,5 @@ if ($_SESSION["role"] != "warden") {
 <a href="reports.php">View Reports</a><br><br>
 <a href="add_student.php">Add Student</a><br><br>
 <a href="view_students.php">View Students</a><br><br>
+<a href="late_students.php">Late Students</a><br><br>
 <a href="../auth/logout.php">Logout</a>
