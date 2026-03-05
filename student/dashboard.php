@@ -244,7 +244,7 @@ h1{
 <div class="topbar">
     <div class="logo">Hostel Leave System</div>
     <div class="user">
-        <?php echo $_SESSION["username"]; ?>
+        <a href="profile.php"><?php echo $_SESSION["username"]; ?></a>
         <div class="logout">
         <a href="../auth/logout.php">Logout</a>
     </div>

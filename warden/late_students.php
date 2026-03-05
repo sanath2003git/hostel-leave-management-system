@@ -7,24 +7,27 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
-/* Fetch students */
+/* Fetch Late Students */
+
 $stmt = $conn->prepare("
 SELECT 
-    users.id,
     users.name,
     users.email,
     student_profiles.register_number,
     student_profiles.department,
-    student_profiles.year,
     student_profiles.room_number,
-    student_profiles.phone
-FROM users
+    student_profiles.phone,
+    hostel_leaves.from_datetime,
+    hostel_leaves.to_datetime
+FROM hostel_leaves
+JOIN users 
+    ON hostel_leaves.student_id = users.id
 JOIN student_profiles 
-ON users.id = student_profiles.user_id
-JOIN roles 
-ON users.role_id = roles.id
-WHERE roles.role_name = 'student'
-ORDER BY users.name
+    ON users.id = student_profiles.user_id
+WHERE hostel_leaves.status = 'Approved'
+AND hostel_leaves.returned_at IS NULL
+AND NOW() > hostel_leaves.to_datetime
+ORDER BY hostel_leaves.to_datetime ASC
 ");
 
 $stmt->execute();
@@ -34,7 +37,7 @@ $result = $stmt->get_result();
 <!DOCTYPE html>
 <html>
 <head>
-<title>View Students</title>
+<title>Late Students</title>
 
 <style>
 
@@ -62,7 +65,7 @@ text-align:left;
 }
 
 th{
-background:#2c3e50;
+background:#c0392b;
 color:white;
 }
 
@@ -70,20 +73,12 @@ tr:hover{
 background:#f2f2f2;
 }
 
-.action-btn{
+.call-btn{
+background:#27ae60;
+color:white;
 padding:5px 10px;
 text-decoration:none;
-color:white;
 border-radius:4px;
-font-size:14px;
-}
-
-.edit{
-background:#27ae60;
-}
-
-.delete{
-background:#c0392b;
 }
 
 .back-btn{
@@ -96,24 +91,24 @@ text-decoration:none;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<h2>Student List</h2>
+<h2>Late Students (Not Returned)</h2>
 
 <table>
 
 <tr>
 <th>Name</th>
-<th>Register Number</th>
+<th>Register No</th>
 <th>Department</th>
-<th>Year</th>
 <th>Room</th>
 <th>Phone</th>
 <th>Email</th>
-<th>Actions</th>
+<th>Leave From</th>
+<th>Leave To</th>
+<th>Action</th>
 </tr>
 
 <?php while($row = $result->fetch_assoc()) { ?>
@@ -123,24 +118,16 @@ text-decoration:none;
 <td><?php echo $row["name"]; ?></td>
 <td><?php echo $row["register_number"]; ?></td>
 <td><?php echo $row["department"]; ?></td>
-<td><?php echo $row["year"]; ?></td>
 <td><?php echo $row["room_number"]; ?></td>
 <td><?php echo $row["phone"]; ?></td>
 <td><?php echo $row["email"]; ?></td>
+<td><?php echo $row["from_datetime"]; ?></td>
+<td><?php echo $row["to_datetime"]; ?></td>
 
 <td>
-
-<a class="action-btn edit" 
-href="edit_student.php?id=<?php echo $row['id']; ?>">
-Edit
+<a class="call-btn" href="tel:<?php echo $row['phone']; ?>">
+Call Student
 </a>
-
-<a class="action-btn delete" 
-href="delete_student.php?id=<?php echo $row['id']; ?>"
-onclick="return confirm('Are you sure you want to delete this student?');">
-Delete
-</a>
-
 </td>
 
 </tr>
