@@ -12,23 +12,31 @@ $message = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $name = $_POST["name"];
-    $username = $_POST["username"];
-    $password = password_hash($_POST["password"], PASSWORD_DEFAULT);
+    $register_number = $_POST["register_number"];
+
+    /* Register number used as username */
+    $username = $register_number;
+
     $email = $_POST["email"];
     $parent_email = $_POST["parent_email"];
     $teacher_email = $_POST["teacher_email"];
 
-    $register_number = $_POST["register_number"];
     $department = $_POST["department"];
     $year = $_POST["year"];
     $room_number = $_POST["room_number"];
     $phone = $_POST["phone"];
 
-    /* Get Student Role ID */
+    /* Generate random password */
+    $password_plain = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"),0,8);
+
+    /* Hash password */
+    $password = password_hash($password_plain, PASSWORD_DEFAULT);
+
+    /* Get student role id */
     $role = $conn->query("SELECT id FROM roles WHERE role_name='student'");
     $role_id = $role->fetch_assoc()["id"];
 
-    /* Insert into users table */
+    /* Insert user */
     $stmt = $conn->prepare("
         INSERT INTO users (role_id, name, username, password, email, parent_email, teacher_email)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -39,9 +47,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $user_id = $conn->insert_id;
 
-    /* Insert into student_profiles */
+    /* Insert student profile */
     $stmt2 = $conn->prepare("
-        INSERT INTO student_profiles 
+        INSERT INTO student_profiles
         (user_id, register_number, department, year, room_number, phone)
         VALUES (?, ?, ?, ?, ?, ?)
     ");
@@ -49,7 +57,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt2->bind_param("ississ", $user_id, $register_number, $department, $year, $room_number, $phone);
     $stmt2->execute();
 
-    $message = "Student added successfully!";
+    /* Send email */
+    include("../config/mail_config.php");
+
+    $subject = "Hostel Leave System Login Details";
+
+    $body = "
+Hello $name,<br><br>
+
+Your account has been created in the <b>Hostel Leave Management System</b>.<br><br>
+
+<b>Login Details</b><br>
+Username: $username<br>
+Password: $password_plain<br><br>
+
+Please login and change your password.<br><br>
+
+Regards,<br>
+Hostel Administration
+";
+
+    sendMail($email, $subject, $body);
+
+    $message = "Student added successfully and login credentials sent to email.";
 }
 ?>
 
@@ -122,11 +152,8 @@ text-decoration:none;
 <label>Name</label>
 <input type="text" name="name" required>
 
-<label>Username</label>
-<input type="text" name="username" required>
-
-<label>Password</label>
-<input type="password" name="password" required>
+<label>Register Number</label>
+<input type="text" name="register_number" required>
 
 <label>Email</label>
 <input type="email" name="email" required>
@@ -137,14 +164,10 @@ text-decoration:none;
 <label>Teacher Email</label>
 <input type="email" name="teacher_email">
 
-<label>Register Number</label>
-<input type="text" name="register_number" required>
-
 <label>Department</label>
 <select name="department" required>
 <option value="">Select Department</option>
 <option value="BCA">BCA</option>
-<option value="BSc Physics">MCA</option>
 <option value="BBA">BBA</option>
 <option value="BCom">BCom</option>
 <option value="BA English">BA English</option>
