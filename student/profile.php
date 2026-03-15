@@ -37,41 +37,101 @@ $student = $result->fetch_assoc();
 <head>
 <title>Student Profile</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
 
-body{
-font-family: Arial;
-background:#f4f4f4;
-padding:40px;
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
 }
 
-.profile-box{
-background:white;
-padding:30px;
-border-radius:8px;
-width:400px;
-box-shadow:0 3px 10px rgba(0,0,0,0.1);
+body{
+min-height:100vh;
+background: linear-gradient(135deg,#dcdde1 0%,#eceef2 40%,#d6d8de 100%);
+padding:120px 60px 60px 60px;
+}
+
+/* TOPBAR */
+
+.topbar{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:70px;
+
+background:#111;
+color:#fff;
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+padding:0 60px;
+
+border-bottom:1px solid #e5e5e5;
+
+z-index:1000;
+}
+
+.topbar a{
+color:#fff;
+text-decoration:none;
+font-weight:500;
+margin-left:20px;
+}
+
+/* CONTAINER */
+
+.dashboard{
+max-width:700px;
+margin:auto;
+padding:60px;
+background:#fff;
+border-radius:22px;
+
+box-shadow:
+0 30px 80px rgba(0,0,0,0.12),
+0 10px 25px rgba(0,0,0,0.08);
 }
 
 h2{
-margin-bottom:20px;
+font-size:28px;
+margin-bottom:35px;
 }
 
+/* PROFILE ROW */
+
 .row{
-margin-bottom:12px;
+margin-bottom:16px;
+font-size:15px;
+color:#444;
 }
 
 .label{
-font-weight:bold;
+font-weight:600;
+margin-right:8px;
 }
 
+/* BACK BUTTON */
+
 .back-btn{
-margin-top:20px;
 display:inline-block;
-padding:8px 12px;
-background:#555;
-color:white;
+margin-top:20px;
+padding:10px 14px;
+border:1px solid #111;
+border-radius:8px;
 text-decoration:none;
+color:#fff;
+background:#111;
+}
+
+.back-btn:hover{
+background:#444;
+color:#fff;
 }
 
 </style>
@@ -80,56 +140,70 @@ text-decoration:none;
 
 <body>
 
-<div class="profile-box">
+<!-- TOPBAR -->
+
+<div class="topbar">
+
+<div>Hostel Leave System</div>
+
+<div>
+<?php echo $_SESSION["username"]; ?> |
+<a href="../auth/logout.php">Logout</a>
+</div>
+
+</div>
+
+
+<div class="dashboard">
 
 <h2>Student Profile</h2>
 
 <div class="row">
 <span class="label">Name:</span>
-<?php echo $student["name"]; ?>
+<?php echo htmlspecialchars($student["name"]); ?>
 </div>
 
 <div class="row">
 <span class="label">Register Number:</span>
-<?php echo $student["register_number"]; ?>
+<?php echo htmlspecialchars($student["register_number"]); ?>
 </div>
 
 <div class="row">
 <span class="label">Department:</span>
-<?php echo $student["department"]; ?>
+<?php echo htmlspecialchars($student["department"]); ?>
 </div>
 
 <div class="row">
 <span class="label">Year:</span>
-<?php echo $student["year"]; ?>
+<?php echo htmlspecialchars($student["year"]); ?>
 </div>
 
 <div class="row">
 <span class="label">Room Number:</span>
-<?php echo $student["room_number"]; ?>
+<?php echo htmlspecialchars($student["room_number"]); ?>
 </div>
 
 <div class="row">
 <span class="label">Phone Number:</span>
-<?php echo $student["phone"]; ?>
+<?php echo htmlspecialchars($student["phone"]); ?>
 </div>
 
 <div class="row">
 <span class="label">Email:</span>
-<?php echo $student["email"]; ?>
+<?php echo htmlspecialchars($student["email"]); ?>
 </div>
 
 <div class="row">
 <span class="label">Parent Email:</span>
-<?php echo $student["parent_email"]; ?>
+<?php echo htmlspecialchars($student["parent_email"]); ?>
 </div>
 
 <div class="row">
 <span class="label">Teacher Email:</span>
-<?php echo $student["teacher_email"]; ?>
+<?php echo htmlspecialchars($student["teacher_email"]); ?>
 </div>
 
-<a class="back-btn" href="dashboard.php">Back to Dashboard</a>
+<a class="back-btn" href="dashboard.php">← Back to Dashboard</a>
 
 </div>
 
