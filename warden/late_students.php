@@ -245,7 +245,6 @@ No late students currently.
 <th>Email</th>
 <th>Leave From</th>
 <th>Leave To</th>
-<th>Action</th>
 </tr>
 
 <?php while($row = $result->fetch_assoc()) { ?>
@@ -260,13 +259,6 @@ No late students currently.
 <td><?php echo $row["email"]; ?></td>
 <td><?php echo $row["from_datetime"]; ?></td>
 <td><?php echo $row["to_datetime"]; ?></td>
-
-<td>
-<a class="call-btn" href="tel:<?php echo $row['phone']; ?>">
-Call Student
-</a>
-</td>
-
 </tr>
 
 <?php } ?>
