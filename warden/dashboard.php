@@ -225,8 +225,13 @@ Manage hostel leave requests and student records.
 <a href="late_students.php">View Late Students</a>
 </div>
 
+<div class="action-card">
+<h3>Attendance</h3>
+<p> Mark students Attendance.</p>
+<a href="attendance.php">Mark Attendance</a>
 </div>
 
+</div >
 </div>
 
 </body>

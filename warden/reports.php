@@ -42,7 +42,7 @@ $rejected = $conn->query("
     WHERE status = 'Rejected'
 ")->fetch_assoc()["count"];
 
-/* CURRENTLY OUTSIDE */
+/* CURRENTLY OUTSIDE (AUTHORIZED) */
 $out_students = $conn->query("
     SELECT COUNT(*) AS count 
     FROM hostel_leaves
@@ -57,6 +57,20 @@ $late_students = $conn->query("
     WHERE status = 'Approved'
     AND returned_at IS NULL
     AND NOW() > to_datetime
+")->fetch_assoc()["count"];
+
+/* 🚨 UNAUTHORIZED STUDENTS */
+$unauthorized = $conn->query("
+    SELECT COUNT(*) AS count
+    FROM attendance
+    WHERE remark = 'Unauthorized'
+")->fetch_assoc()["count"];
+
+/* 📅 TODAY ATTENDANCE */
+$today_attendance = $conn->query("
+    SELECT COUNT(*) AS count
+    FROM attendance
+    WHERE date = CURDATE()
 ")->fetch_assoc()["count"];
 ?>
 
@@ -101,21 +115,12 @@ padding:0 60px;
 color:#fff;
 
 box-shadow:0 6px 20px rgba(0,0,0,0.35);
-border-bottom:1px solid #222;
-
 z-index:1000;
 }
 
 .logo{
 font-size:18px;
 font-weight:600;
-letter-spacing:0.5px;
-}
-
-.topbar a{
-text-decoration:none;
-color:#fff;
-font-weight:500;
 }
 
 /* LOGOUT BUTTON */
@@ -124,16 +129,14 @@ font-weight:500;
 padding:8px 16px;
 border-radius:8px;
 background:#111;
-color:1#fff;
+color:#fff; /* ✅ FIXED */
 text-decoration:none;
 font-size:14px;
-font-weight:500;
 margin-left:12px;
-transition:0.2s;
 }
 
 .logout-btn:hover{
-background: rgba(255, 255, 238, 0.15);
+background: rgba(255, 255, 255, 0.15);
 }
 
 /* CONTAINER */
@@ -154,7 +157,7 @@ h1{
 margin-bottom:35px;
 }
 
-/* REPORT GRID */
+/* GRID */
 
 .report-container{
 display:grid;
@@ -177,7 +180,6 @@ transition:0.2s;
 
 .card:hover{
 transform:translateY(-4px);
-box-shadow:0 15px 30px rgba(0,0,0,0.08);
 }
 
 .card h3{
@@ -198,7 +200,6 @@ color:#111;
 display:inline-block;
 margin-top:20px;
 padding:10px 14px;
-border:1px solid #111;
 border-radius:8px;
 text-decoration:none;
 color:#fff;
@@ -207,7 +208,6 @@ background:#111;
 
 .back-btn:hover{
 background:#444;
-color:#fff;
 }
 
 </style>
@@ -226,7 +226,6 @@ color:#fff;
 </div>
 
 </div>
-
 
 <div class="container">
 
@@ -260,13 +259,23 @@ color:#fff;
 </div>
 
 <div class="card">
-<h3>Students Currently Outside</h3>
+<h3>Students Outside (Authorized)</h3>
 <p><?php echo $out_students; ?></p>
 </div>
 
 <div class="card">
 <h3>Late Students</h3>
 <p><?php echo $late_students; ?></p>
+</div>
+
+<div class="card">
+<h3>🚨 Unauthorized Students</h3>
+<p style="color:red;"><?php echo $unauthorized; ?></p>
+</div>
+
+<div class="card">
+<h3>📅 Today's Attendance</h3>
+<p><?php echo $today_attendance; ?></p>
 </div>
 
 </div>
