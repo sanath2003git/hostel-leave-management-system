@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 05, 2026 at 11:40 AM
+-- Generation Time: Mar 19, 2026 at 08:11 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,29 @@ SET time_zone = "+00:00";
 --
 -- Database: `hostel_leave_db`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `attendance`
+--
+
+CREATE TABLE `attendance` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `status` enum('Present','Absent','Leave') DEFAULT 'Present',
+  `remark` enum('Normal','Unauthorized') DEFAULT 'Normal',
+  `marked_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `attendance`
+--
+
+INSERT INTO `attendance` (`id`, `user_id`, `date`, `status`, `remark`, `marked_by`, `created_at`) VALUES
+(1, 6, '2026-03-19', 'Present', 'Normal', 3, '2026-03-19 06:38:21');
 
 -- --------------------------------------------------------
 
@@ -46,8 +69,10 @@ CREATE TABLE `hostel_leaves` (
 INSERT INTO `hostel_leaves` (`id`, `student_id`, `leave_type_id`, `from_datetime`, `to_datetime`, `reason`, `status`, `applied_at`, `returned_at`) VALUES
 (9, 6, 8, '2026-03-03 16:10:00', '2026-03-04 05:09:00', 'group study', 'Approved', '2026-03-03 17:40:31', '2026-03-05 15:21:23'),
 (10, 6, 6, '2026-03-05 16:08:00', '2026-03-08 15:08:00', 'sick', 'Approved', '2026-03-05 09:39:00', '2026-03-05 15:21:21'),
-(11, 7, 5, '2026-03-05 15:13:00', '2026-03-07 15:16:00', 'NULL', 'Approved', '2026-03-05 09:44:11', '2026-03-05 15:21:18'),
-(12, 6, 6, '2026-03-05 16:07:00', '2026-03-20 16:07:00', 'home visit', 'Approved', '2026-03-05 10:37:31', NULL);
+(12, 6, 6, '2026-03-05 16:07:00', '2026-03-20 16:07:00', 'home visit', 'Approved', '2026-03-05 10:37:31', '2026-03-15 21:25:40'),
+(13, 6, 6, '2026-03-15 21:28:00', '2026-03-31 21:30:00', 'sick', 'Approved', '2026-03-15 15:56:42', '2026-03-16 15:12:44'),
+(15, 6, 4, '2026-03-16 21:02:00', '2026-03-17 20:03:00', 'no reason', 'Rejected', '2026-03-16 09:33:21', NULL),
+(16, 6, 4, '2026-03-16 15:11:00', '2026-03-17 15:11:00', 'ss', 'Approved', '2026-03-16 09:41:50', '2026-03-19 12:10:27');
 
 -- --------------------------------------------------------
 
@@ -128,8 +153,7 @@ CREATE TABLE `student_profiles` (
 --
 
 INSERT INTO `student_profiles` (`id`, `user_id`, `register_number`, `department`, `year`, `room_number`, `phone`) VALUES
-(2, 6, '2520', 'mca', 2025, '1011', NULL),
-(3, 7, '252111', 'B tech', 2024, '1015', NULL);
+(2, 6, '2520', 'mca', 2025, '1011', NULL);
 
 -- --------------------------------------------------------
 
@@ -155,12 +179,19 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `role_id`, `name`, `username`, `password`, `email`, `parent_email`, `teacher_email`, `created_at`) VALUES
 (3, 2, 'Main Warden', 'warden', '$2y$10$93Ul/A1Q2WdhaPnuGZMzJebt.1pCh.uprf/0DvBRbxclxx9l6rkSe', NULL, NULL, NULL, '2026-03-03 13:31:52'),
-(6, 1, 'sanath', 'sanath', '$2y$10$ttEqidY.X5eZGcETjSHliuH61oIloxTsaXCqWT1EaAqFNkRhgnIGG', 'sanathsreekumar18@gmail.com', 'brianpeterbernard5665@gmail.com', '2515@tkmce.ac.in', '2026-03-03 17:38:47'),
-(7, 1, 'sajeer', 'sajeer', '$2y$10$SOn//Kg3.zLu661NjLvdGun1QluhvgzZf1zvl8rVQ1thwYmFCGsQO', 'sajeer@example.com', 'sajeer@example.com', 'sajeer@example.com', '2026-03-05 09:42:27');
+(6, 1, 'sanath', 'sanath', '$2y$10$ttEqidY.X5eZGcETjSHliuH61oIloxTsaXCqWT1EaAqFNkRhgnIGG', 'sanathsreekumar18@gmail.com', 'brianpeterbernard5665@gmail.com', '2515@tkmce.ac.in', '2026-03-03 17:38:47');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `attendance`
+--
+ALTER TABLE `attendance`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`user_id`,`date`),
+  ADD KEY `marked_by` (`marked_by`);
 
 --
 -- Indexes for table `hostel_leaves`
@@ -211,10 +242,16 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `attendance`
+--
+ALTER TABLE `attendance`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT for table `hostel_leaves`
 --
 ALTER TABLE `hostel_leaves`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `leave_types`
@@ -238,17 +275,24 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `attendance`
+--
+ALTER TABLE `attendance`
+  ADD CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `attendance_ibfk_2` FOREIGN KEY (`marked_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `hostel_leaves`
