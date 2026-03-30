@@ -42,13 +42,16 @@ $rejected = $conn->query("
     WHERE status = 'Rejected'
 ")->fetch_assoc()["count"];
 
-/* CURRENTLY OUTSIDE (AUTHORIZED) */
+/* 🔴 STUDENTS OUTSIDE */
 $out_students = $conn->query("
     SELECT COUNT(*) AS count 
     FROM hostel_leaves
     WHERE status = 'Approved'
     AND returned_at IS NULL
 ")->fetch_assoc()["count"];
+
+/* 🟢 STUDENTS INSIDE */
+$in_students = $total_students - $out_students;
 
 /* LATE STUDENTS */
 $late_students = $conn->query("
@@ -59,19 +62,6 @@ $late_students = $conn->query("
     AND NOW() > to_datetime
 ")->fetch_assoc()["count"];
 
-/* 🚨 UNAUTHORIZED STUDENTS */
-$unauthorized = $conn->query("
-    SELECT COUNT(*) AS count
-    FROM attendance
-    WHERE remark = 'Unauthorized'
-")->fetch_assoc()["count"];
-
-/* 📅 TODAY ATTENDANCE */
-$today_attendance = $conn->query("
-    SELECT COUNT(*) AS count
-    FROM attendance
-    WHERE date = CURDATE()
-")->fetch_assoc()["count"];
 ?>
 
 <!DOCTYPE html>
@@ -129,7 +119,7 @@ font-weight:600;
 padding:8px 16px;
 border-radius:8px;
 background:#111;
-color:#fff; /* ✅ FIXED */
+color:#fff;
 text-decoration:none;
 font-size:14px;
 margin-left:12px;
@@ -192,6 +182,16 @@ margin-bottom:8px;
 font-size:30px;
 font-weight:600;
 color:#111;
+}
+
+/* COLORS FOR NEW CARDS */
+
+.in-card {
+    background: #eafaf1;
+}
+
+.out-card {
+    background: #fdecea;
 }
 
 /* BACK BUTTON */
@@ -258,24 +258,21 @@ background:#444;
 <p><?php echo $rejected; ?></p>
 </div>
 
-<div class="card">
-<h3>Students Outside (Authorized)</h3>
+<!-- 🔴 OUTSIDE -->
+<div class="card out-card">
+<h3>🔴 Students Out</h3>
 <p><?php echo $out_students; ?></p>
+</div>
+
+<!-- 🟢 INSIDE -->
+<div class="card in-card">
+<h3>🟢 Students In Hostel</h3>
+<p><?php echo $in_students; ?></p>
 </div>
 
 <div class="card">
 <h3>Late Students</h3>
 <p><?php echo $late_students; ?></p>
-</div>
-
-<div class="card">
-<h3>🚨 Unauthorized Students</h3>
-<p style="color:red;"><?php echo $unauthorized; ?></p>
-</div>
-
-<div class="card">
-<h3>📅 Today's Attendance</h3>
-<p><?php echo $today_attendance; ?></p>
 </div>
 
 </div>
