@@ -11,15 +11,11 @@ if ($_SESSION["role"] != "warden") {
 /* MAIN REQUEST QUERY */
 
 $query = "
-
 SELECT hostel_leaves.*, users.name, leave_types.type_name
 FROM hostel_leaves
-JOIN users 
-    ON hostel_leaves.student_id = users.id
-JOIN leave_types 
-    ON hostel_leaves.leave_type_id = leave_types.id
+JOIN users ON hostel_leaves.student_id = users.id
+JOIN leave_types ON hostel_leaves.leave_type_id = leave_types.id
 ORDER BY hostel_leaves.applied_at DESC
-
 ";
 
 $result = mysqli_query($conn, $query);
@@ -27,18 +23,14 @@ $result = mysqli_query($conn, $query);
 /* ===== STATISTICS ===== */
 
 $total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM hostel_leaves"))['total'];
-
 $pending = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM hostel_leaves WHERE status='Pending'"))['total'];
-
 $approved = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM hostel_leaves WHERE status='Approved'"))['total'];
-
 $returned = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM hostel_leaves WHERE returned_at IS NOT NULL"))['total'];
 
 ?>
 
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <title>Leave Requests</title>
@@ -69,17 +61,13 @@ left:0;
 width:100%;
 height:70px;
 background:#111;
-
 display:flex;
 justify-content:space-between;
 align-items:center;
-
 padding:0 60px;
 color:#fff;
-
 box-shadow:0 6px 20px rgba(0,0,0,0.35);
 border-bottom:1px solid #222;
-
 z-index:1000;
 }
 
@@ -89,7 +77,7 @@ color:#fff;
 font-weight:500;
 }
 
-/* PAGE CONTAINER */
+/* CONTAINER */
 
 .container{
 max-width:1100px;
@@ -97,7 +85,6 @@ margin:auto;
 padding:60px;
 background:#fff;
 border-radius:22px;
-
 box-shadow:
 0 40px 90px rgba(0,0,0,0.12),
 0 15px 35px rgba(0,0,0,0.08);
@@ -107,7 +94,7 @@ h1{
 margin-bottom:25px;
 }
 
-/* ===== STATISTICS ===== */
+/* STATS */
 
 .stats{
 display:grid;
@@ -121,7 +108,6 @@ background:#fff;
 border-radius:16px;
 padding:22px;
 border:1px solid #eee;
-
 box-shadow:0 8px 20px rgba(0,0,0,0.05);
 }
 
@@ -135,7 +121,7 @@ margin-bottom:6px;
 font-size:28px;
 }
 
-/* REQUEST CARD */
+/* CARD */
 
 .card{
 background:#fafafa;
@@ -143,7 +129,6 @@ padding:28px;
 margin-bottom:25px;
 border-radius:16px;
 border:1px solid #eee;
-
 box-shadow:0 8px 20px rgba(0,0,0,0.06);
 }
 
@@ -186,7 +171,7 @@ font-size:14px;
 color:#555;
 }
 
-/* ACTION BUTTONS */
+/* BUTTONS */
 
 .actions{
 margin-top:18px;
@@ -223,7 +208,6 @@ opacity:0.85;
 display:inline-block;
 margin-top:20px;
 padding:10px 14px;
-border:1px solid #111;
 border-radius:8px;
 text-decoration:none;
 color:#fff;
@@ -232,29 +216,22 @@ background:#111;
 
 .back-btn:hover{
 background:#444;
-color:#fff;
 }
 
+/* FIXED BUG */
 .logout-btn{
 padding:8px 16px;
 border-radius:8px;
 background:#111;
-color:1#fff;
+color:#fff;
 text-decoration:none;
 font-size:14px;
-font-weight:500;
 margin-left:12px;
-transition:0.2s;
-}
-
-.logout-btn:hover{
-background: rgba(255, 255, 238, 0.15);
 }
 
 .logo{
 font-size:18px;
 font-weight:600;
-letter-spacing:0.5px;
 }
 
 </style>
@@ -274,13 +251,9 @@ letter-spacing:0.5px;
 
 </div>
 
-
 <div class="container">
 
 <h1>Leave Requests</h1>
-
-
-<!-- ===== STATISTICS ROW ===== -->
 
 <div class="stats">
 
@@ -305,7 +278,6 @@ letter-spacing:0.5px;
 </div>
 
 </div>
-
 
 <?php
 
@@ -351,6 +323,14 @@ $status = strtolower($row["status"]);
 <strong>Reason:</strong> <?php echo htmlspecialchars($row["reason"]); ?>
 </div>
 
+<!-- ✅ NEW: MESS CUT -->
+<div class="row">
+<strong>Mess Cut:</strong> 
+<span style="color: <?php echo $row["mess_cut"] ? "green" : "red"; ?>">
+<?php echo $row["mess_cut"] ? "Yes 🍽️" : "No"; ?>
+</span>
+</div>
+
 <?php if ($row["returned_at"] != NULL) { ?>
 
 <div class="row">
@@ -366,7 +346,6 @@ $status = strtolower($row["status"]);
 if ($row["status"] == "Pending") {
 
 echo "<a class='approve' href='approve_leave.php?id=".$row["id"]."&action=approve'>Approve</a>";
-
 echo "<a class='reject' href='approve_leave.php?id=".$row["id"]."&action=reject'>Reject</a>";
 
 }
