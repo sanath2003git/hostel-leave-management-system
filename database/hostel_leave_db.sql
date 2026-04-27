@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 27, 2026 at 03:06 PM
+-- Generation Time: Apr 27, 2026 at 05:06 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -46,8 +46,8 @@ INSERT INTO `attendance` (`id`, `user_id`, `date`, `status`, `remark`, `marked_b
 (2, 7, '2026-03-30', 'Present', 'Normal', 3, '2026-03-30 18:40:08'),
 (3, 18, '2026-03-30', 'Present', 'Normal', 3, '2026-03-30 18:40:08'),
 (7, 6, '2026-04-27', 'Absent', 'Unauthorized', 3, '2026-04-27 12:41:35'),
-(8, 7, '2026-04-27', 'Present', 'Normal', 3, '2026-04-27 12:41:35'),
-(9, 18, '2026-04-27', 'Present', 'Normal', 3, '2026-04-27 12:41:35');
+(8, 7, '2026-04-27', 'Absent', 'Unauthorized', 3, '2026-04-27 12:41:35'),
+(9, 18, '2026-04-27', 'Absent', 'Unauthorized', 3, '2026-04-27 12:41:35');
 
 -- --------------------------------------------------------
 
@@ -135,6 +135,34 @@ CREATE TABLE `roles` (
 INSERT INTO `roles` (`id`, `role_name`) VALUES
 (1, 'student'),
 (2, 'warden');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_list__mca_2k25`
+--
+
+CREATE TABLE `student_list__mca_2k25` (
+  `id` int(11) NOT NULL,
+  `register_number` varchar(50) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `parent_email` varchar(100) DEFAULT NULL,
+  `teacher_email` varchar(100) DEFAULT NULL,
+  `department` varchar(50) DEFAULT NULL,
+  `year` int(11) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `student_list__mca_2k25`
+--
+
+INSERT INTO `student_list__mca_2k25` (`id`, `register_number`, `name`, `email`, `parent_email`, `teacher_email`, `department`, `year`, `phone`) VALUES
+(1, '2515', 'CS SANATH SREEKUMAR', '2515@tkmce.ac.in', '2511@tkmce.ac.in', '2558@tkmce.ac.in', 'MCA', 1, '9999999999'),
+(2, '2558', 'B SANJAY RAM  ', '2558@tkmce.ac.in', '2558@tkmce.ac.in', '2558@tkmce.ac.in', 'MCA', 1, '9999999999'),
+(3, '2511', 'BRIAN PETER BERNARD', '2511@tkmce.ac.in', '2511@tkmce.ac.in', '2511@tkmce.ac.in', 'MCA', 1, '9999999999'),
+(4, '2544', 'ASWIN  S', '2544@tkmce.ac.in', '2544@tkmce.ac.in', '2544@tkmce.ac.in', 'MCA', 1, '9999999999');
 
 -- --------------------------------------------------------
 
@@ -230,6 +258,13 @@ ALTER TABLE `roles`
   ADD UNIQUE KEY `role_name` (`role_name`);
 
 --
+-- Indexes for table `student_list__mca_2k25`
+--
+ALTER TABLE `student_list__mca_2k25`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `register_number` (`register_number`);
+
+--
 -- Indexes for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
@@ -252,7 +287,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `attendance`
 --
 ALTER TABLE `attendance`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `hostel_leaves`
@@ -277,6 +312,12 @@ ALTER TABLE `notifications`
 --
 ALTER TABLE `roles`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `student_list__mca_2k25`
+--
+ALTER TABLE `student_list__mca_2k25`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `student_profiles`
