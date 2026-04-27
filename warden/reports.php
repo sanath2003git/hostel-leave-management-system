@@ -15,7 +15,7 @@ JOIN roles ON users.role_id = roles.id
 WHERE roles.role_name='student'
 ")->fetch_assoc()["count"];
 
-/* TOTAL LEAVES */
+/* TOTAL LEAVE APPLICATIONS */
 $total_leaves = $conn->query("
 SELECT COUNT(*) AS count
 FROM hostel_leaves
@@ -42,27 +42,28 @@ FROM hostel_leaves
 WHERE status='Rejected'
 ")->fetch_assoc()["count"];
 
-/* STUDENTS OUTSIDE (Approved + Unauthorized Today) */
+/* STUDENTS OUTSIDE (Approved Leave + Unauthorized Absent Today) */
 $out_students = $conn->query("
-SELECT COUNT(*) AS count FROM (
+SELECT COUNT(DISTINCT uid) AS count
+FROM (
 
-SELECT DISTINCT student_id AS uid
-FROM hostel_leaves
-WHERE status='Approved'
-AND returned_at IS NULL
+    SELECT student_id AS uid
+    FROM hostel_leaves
+    WHERE status='Approved'
+    AND returned_at IS NULL
 
-UNION
+    UNION
 
-SELECT DISTINCT user_id AS uid
-FROM attendance
-WHERE date = CURDATE()
-AND remark='Unauthorized'
+    SELECT user_id AS uid
+    FROM attendance
+    WHERE date = CURDATE()
+    AND remark='Unauthorized'
 
 ) x
 ")->fetch_assoc()["count"];
 
-/* INSIDE HOSTEL */
-$in_students = $total_students - $out_students;
+/* STUDENTS INSIDE (SAFE) */
+$in_students = max(0, $total_students - $out_students);
 
 /* LATE STUDENTS */
 $late_students = $conn->query("
@@ -86,14 +87,18 @@ AND mess_cut = 1
 $today_requests = $conn->query("
 SELECT COUNT(*) AS count
 FROM hostel_leaves
-WHERE DATE(applied_at)=CURDATE()
+WHERE DATE(applied_at) = CURDATE()
 ")->fetch_assoc()["count"];
 
-/* APPROVAL RATE */
-$approval_rate = $total_leaves > 0 ? round(($approved / $total_leaves) * 100) : 0;
+/* APPROVAL RATE (SAFE) */
+$approval_rate = $total_leaves > 0
+? round(($approved / $total_leaves) * 100)
+: 0;
 
-/* OCCUPANCY */
-$occupancy = $total_students > 0 ? round(($in_students / $total_students) * 100) : 0;
+/* OCCUPANCY (SAFE) */
+$occupancy = $total_students > 0
+? max(0, round(($in_students / $total_students) * 100))
+: 0;
 ?>
 
 <!DOCTYPE html>
@@ -211,12 +216,12 @@ font-weight:600;
 color:#111;
 }
 
-.in-card{ background:#eafaf1; }
-.out-card{ background:#fdecea; }
-.late-card{ background:#fff1f1; }
-.mess-card{ background:#fff8e6; }
-.pending-card{ background:#eef4ff; }
-.reject-card{ background:#fff0f0; }
+.in-card{background:#eafaf1;}
+.out-card{background:#fdecea;}
+.late-card{background:#fff1f1;}
+.mess-card{background:#fff8e6;}
+.pending-card{background:#eef4ff;}
+.reject-card{background:#fff0f0;}
 
 .back-btn{
 display:inline-block;
