@@ -14,15 +14,24 @@ if (!isset($_GET["id"])) {
 
 $leave_id = intval($_GET["id"]);
 
+/* Mark student returned + disable mess cut */
+
 $stmt = $conn->prepare("
     UPDATE hostel_leaves
-    SET returned_at = NOW()
+    SET returned_at = NOW(),
+        mess_cut = 0
     WHERE id = ?
 ");
 
 $stmt->bind_param("i", $leave_id);
-$stmt->execute();
 
-header("Location: view_requests.php");
-exit();
+if ($stmt->execute()) {
+    header("Location: view_requests.php");
+    exit();
+} else {
+    echo "Error updating return status.";
+}
+
+$stmt->close();
+$conn->close();
 ?>

@@ -9,59 +9,80 @@ if ($_SESSION["role"] != "warden") {
 
 /* TOTAL STUDENTS */
 $total_students = $conn->query("
-    SELECT COUNT(*) AS count 
-    FROM users 
-    JOIN roles ON users.role_id = roles.id
-    WHERE roles.role_name = 'student'
+SELECT COUNT(*) AS count
+FROM users
+JOIN roles ON users.role_id = roles.id
+WHERE roles.role_name='student'
 ")->fetch_assoc()["count"];
 
 /* TOTAL LEAVES */
 $total_leaves = $conn->query("
-    SELECT COUNT(*) AS count 
-    FROM hostel_leaves
+SELECT COUNT(*) AS count
+FROM hostel_leaves
 ")->fetch_assoc()["count"];
 
 /* APPROVED */
 $approved = $conn->query("
-    SELECT COUNT(*) AS count 
-    FROM hostel_leaves
-    WHERE status = 'Approved'
+SELECT COUNT(*) AS count
+FROM hostel_leaves
+WHERE status='Approved'
 ")->fetch_assoc()["count"];
 
 /* PENDING */
 $pending = $conn->query("
-    SELECT COUNT(*) AS count 
-    FROM hostel_leaves
-    WHERE status = 'Pending'
+SELECT COUNT(*) AS count
+FROM hostel_leaves
+WHERE status='Pending'
 ")->fetch_assoc()["count"];
 
 /* REJECTED */
 $rejected = $conn->query("
-    SELECT COUNT(*) AS count 
-    FROM hostel_leaves
-    WHERE status = 'Rejected'
+SELECT COUNT(*) AS count
+FROM hostel_leaves
+WHERE status='Rejected'
 ")->fetch_assoc()["count"];
 
-/* 🔴 STUDENTS OUTSIDE */
+/* STUDENTS OUTSIDE */
 $out_students = $conn->query("
-    SELECT COUNT(*) AS count 
-    FROM hostel_leaves
-    WHERE status = 'Approved'
-    AND returned_at IS NULL
+SELECT COUNT(*) AS count
+FROM hostel_leaves
+WHERE status='Approved'
+AND returned_at IS NULL
 ")->fetch_assoc()["count"];
 
-/* 🟢 STUDENTS INSIDE */
+/* STUDENTS INSIDE */
 $in_students = $total_students - $out_students;
 
 /* LATE STUDENTS */
 $late_students = $conn->query("
-    SELECT COUNT(*) AS count
-    FROM hostel_leaves
-    WHERE status = 'Approved'
-    AND returned_at IS NULL
-    AND NOW() > to_datetime
+SELECT COUNT(*) AS count
+FROM hostel_leaves
+WHERE status='Approved'
+AND returned_at IS NULL
+AND NOW() > to_datetime
 ")->fetch_assoc()["count"];
 
+/* ACTIVE MESS CUT */
+$mess_cut_active = $conn->query("
+SELECT COUNT(*) AS count
+FROM hostel_leaves
+WHERE status='Approved'
+AND returned_at IS NULL
+AND mess_cut = 1
+")->fetch_assoc()["count"];
+
+/* TODAY REQUESTS */
+$today_requests = $conn->query("
+SELECT COUNT(*) AS count
+FROM hostel_leaves
+WHERE DATE(applied_at)=CURDATE()
+")->fetch_assoc()["count"];
+
+/* APPROVAL RATE */
+$approval_rate = $total_leaves > 0 ? round(($approved / $total_leaves) * 100) : 0;
+
+/* HOSTEL OCCUPANCY */
+$occupancy = $total_students > 0 ? round(($in_students / $total_students) * 100) : 0;
 ?>
 
 <!DOCTYPE html>
@@ -69,6 +90,8 @@ $late_students = $conn->query("
 <head>
 
 <title>System Reports</title>
+
+<meta http-equiv="refresh" content="30">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -83,7 +106,7 @@ font-family:'Poppins',sans-serif;
 
 body{
 min-height:100vh;
-background: linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
+background:linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
 padding:120px 60px 60px 60px;
 }
 
@@ -96,14 +119,11 @@ left:0;
 width:100%;
 height:70px;
 background:#111;
-
 display:flex;
 justify-content:space-between;
 align-items:center;
-
 padding:0 60px;
 color:#fff;
-
 box-shadow:0 6px 20px rgba(0,0,0,0.35);
 z-index:1000;
 }
@@ -113,12 +133,10 @@ font-size:18px;
 font-weight:600;
 }
 
-/* LOGOUT BUTTON */
-
 .logout-btn{
 padding:8px 16px;
 border-radius:8px;
-background:#111;
+background:#222;
 color:#fff;
 text-decoration:none;
 font-size:14px;
@@ -126,24 +144,29 @@ margin-left:12px;
 }
 
 .logout-btn:hover{
-background: rgba(255, 255, 255, 0.15);
+background:#444;
 }
 
 /* CONTAINER */
 
 .container{
-max-width:1100px;
+max-width:1200px;
 margin:auto;
 padding:60px;
 background:#fff;
 border-radius:22px;
-
 box-shadow:
 0 40px 90px rgba(0,0,0,0.12),
 0 15px 35px rgba(0,0,0,0.08);
 }
 
 h1{
+margin-bottom:10px;
+}
+
+.subtext{
+color:#777;
+font-size:14px;
 margin-bottom:35px;
 }
 
@@ -158,12 +181,11 @@ gap:20px;
 /* CARD */
 
 .card{
-background:#fafafa;
+background:linear-gradient(135deg,#ffffff,#f8f9fb);
 padding:28px;
 border-radius:16px;
 border:1px solid #eee;
 text-align:center;
-
 box-shadow:0 8px 20px rgba(0,0,0,0.05);
 transition:0.2s;
 }
@@ -184,21 +206,29 @@ font-weight:600;
 color:#111;
 }
 
-/* COLORS FOR NEW CARDS */
+/* COLORS */
 
-.in-card {
-    background: #eafaf1;
+.in-card{
+background:#eafaf1;
 }
 
-.out-card {
-    background: #fdecea;
+.out-card{
+background:#fdecea;
+}
+
+.late-card{
+background:#fff1f1;
+}
+
+.mess-card{
+background:#fff8e6;
 }
 
 /* BACK BUTTON */
 
 .back-btn{
 display:inline-block;
-margin-top:20px;
+margin-top:25px;
 padding:10px 14px;
 border-radius:8px;
 text-decoration:none;
@@ -211,7 +241,6 @@ background:#444;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -222,6 +251,8 @@ background:#444;
 
 <div>
 <?php echo $_SESSION["username"]; ?>
+|
+<?php echo date("d M Y - h:i A"); ?>
 <a class="logout-btn" href="../auth/logout.php">Logout</a>
 </div>
 
@@ -230,49 +261,68 @@ background:#444;
 <div class="container">
 
 <h1>System Reports</h1>
+<div class="subtext">Live dashboard refreshes every 30 seconds</div>
 
 <div class="report-container">
 
 <div class="card">
-<h3>Total Students</h3>
+<h3>👨‍🎓 Total Students</h3>
 <p><?php echo $total_students; ?></p>
 </div>
 
 <div class="card">
-<h3>Total Leave Applications</h3>
+<h3>📝 Leave Applications</h3>
 <p><?php echo $total_leaves; ?></p>
 </div>
 
 <div class="card">
-<h3>Approved Leaves</h3>
+<h3>✅ Approved Leaves</h3>
 <p><?php echo $approved; ?></p>
 </div>
 
 <div class="card">
-<h3>Pending Leaves</h3>
+<h3>⏳ Pending Leaves</h3>
 <p><?php echo $pending; ?></p>
 </div>
 
 <div class="card">
-<h3>Rejected Leaves</h3>
+<h3>❌ Rejected Leaves</h3>
 <p><?php echo $rejected; ?></p>
 </div>
 
-<!-- 🔴 OUTSIDE -->
 <div class="card out-card">
 <h3>🔴 Students Out</h3>
 <p><?php echo $out_students; ?></p>
 </div>
 
-<!-- 🟢 INSIDE -->
 <div class="card in-card">
-<h3>🟢 Students In Hostel</h3>
+<h3>🟢 In Hostel</h3>
 <p><?php echo $in_students; ?></p>
 </div>
 
-<div class="card">
-<h3>Late Students</h3>
+<div class="card late-card">
+<h3>⚠️ Late Students</h3>
 <p><?php echo $late_students; ?></p>
+</div>
+
+<div class="card mess-card">
+<h3>🍽️ Active Mess Cuts</h3>
+<p><?php echo $mess_cut_active; ?></p>
+</div>
+
+<div class="card">
+<h3>📅 Today Requests</h3>
+<p><?php echo $today_requests; ?></p>
+</div>
+
+<div class="card">
+<h3>📈 Approval Rate</h3>
+<p><?php echo $approval_rate; ?>%</p>
+</div>
+
+<div class="card">
+<h3>🏨 Occupancy</h3>
+<p><?php echo $occupancy; ?>%</p>
 </div>
 
 </div>
