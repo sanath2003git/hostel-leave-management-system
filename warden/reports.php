@@ -251,8 +251,7 @@ background:#444;
 
 <div>
 <?php echo $_SESSION["username"]; ?>
-|
-<?php echo date("d M Y - h:i A"); ?>
+ |
 <a class="logout-btn" href="../auth/logout.php">Logout</a>
 </div>
 
