@@ -1,5 +1,4 @@
 <?php
-
 include("../includes/auth_check.php");
 include("../config/db.php");
 
@@ -8,25 +7,28 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
-/* MAIN REQUEST QUERY */
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-$query = "
-SELECT hostel_leaves.*, users.name, leave_types.type_name
-FROM hostel_leaves
-JOIN users ON hostel_leaves.student_id = users.id
-JOIN leave_types ON hostel_leaves.leave_type_id = leave_types.id
-ORDER BY hostel_leaves.applied_at DESC
-";
-
-$result = mysqli_query($conn, $query);
-
-/* ===== STATISTICS ===== */
-
-$total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM hostel_leaves"))['total'];
-$pending = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM hostel_leaves WHERE status='Pending'"))['total'];
-$approved = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM hostel_leaves WHERE status='Approved'"))['total'];
-$returned = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as total FROM hostel_leaves WHERE returned_at IS NOT NULL"))['total'];
-
+if ($search != '') {
+    $stmt = $conn->prepare("
+        SELECT hostel_leaves.*, users.name, users.register_number
+        FROM hostel_leaves
+        JOIN users ON hostel_leaves.student_id = users.id
+        WHERE users.name LIKE ? OR users.register_number LIKE ?
+        ORDER BY hostel_leaves.id DESC
+    ");
+    $like = "%$search%";
+    $stmt->bind_param("ss", $like, $like);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    $result = $conn->query("
+        SELECT hostel_leaves.*, users.name, users.register_number
+        FROM hostel_leaves
+        JOIN users ON hostel_leaves.student_id = users.id
+        ORDER BY hostel_leaves.id DESC
+    ");
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,11 +50,9 @@ font-family:'Poppins',sans-serif;
 
 body{
 min-height:100vh;
-background: linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
-padding:120px 60px 60px 60px;
+background:linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
+padding:120px 50px 50px 50px;
 }
-
-/* TOPBAR */
 
 .topbar{
 position:fixed;
@@ -64,169 +64,10 @@ background:#111;
 display:flex;
 justify-content:space-between;
 align-items:center;
-padding:0 60px;
+padding:0 50px;
 color:#fff;
-box-shadow:0 6px 20px rgba(0,0,0,0.35);
-border-bottom:1px solid #222;
 z-index:1000;
-}
-
-.topbar a{
-text-decoration:none;
-color:#fff;
-font-weight:500;
-}
-
-/* CONTAINER */
-
-.container{
-max-width:1100px;
-margin:auto;
-padding:60px;
-background:#fff;
-border-radius:22px;
-box-shadow:
-0 40px 90px rgba(0,0,0,0.12),
-0 15px 35px rgba(0,0,0,0.08);
-}
-
-h1{
-margin-bottom:25px;
-}
-
-/* STATS */
-
-.stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:20px;
-margin-bottom:35px;
-}
-
-.stat-card{
-background:#fff;
-border-radius:16px;
-padding:22px;
-border:1px solid #eee;
-box-shadow:0 8px 20px rgba(0,0,0,0.05);
-}
-
-.stat-card p{
-font-size:13px;
-color:#666;
-margin-bottom:6px;
-}
-
-.stat-card h2{
-font-size:28px;
-}
-
-/* CARD */
-
-.card{
-background:#fafafa;
-padding:28px;
-margin-bottom:25px;
-border-radius:16px;
-border:1px solid #eee;
-box-shadow:0 8px 20px rgba(0,0,0,0.06);
-}
-
-.card-header{
-display:flex;
-justify-content:space-between;
-margin-bottom:18px;
-}
-
-.student{
-font-size:18px;
-font-weight:600;
-}
-
-.status{
-font-weight:600;
-font-size:13px;
-padding:6px 12px;
-border-radius:20px;
-}
-
-.pending{
-background:#fff3cd;
-color:#856404;
-}
-
-.approved{
-background:#e6f4ea;
-color:#1e7e34;
-}
-
-.rejected{
-background:#fdecea;
-color:#c82333;
-}
-
-.row{
-margin-bottom:8px;
-font-size:14px;
-color:#555;
-}
-
-/* BUTTONS */
-
-.actions{
-margin-top:18px;
-}
-
-.actions a{
-text-decoration:none;
-padding:9px 16px;
-border-radius:8px;
-font-size:13px;
-margin-right:10px;
-}
-
-.approve{
-background:#111;
-color:white;
-}
-
-.reject{
-background:#e74c3c;
-color:white;
-}
-
-.return{
-background:#2c7be5;
-color:white;
-}
-
-.actions a:hover{
-opacity:0.85;
-}
-
-.back-btn{
-display:inline-block;
-margin-top:20px;
-padding:10px 14px;
-border-radius:8px;
-text-decoration:none;
-color:#fff;
-background:#111;
-}
-
-.back-btn:hover{
-background:#444;
-}
-
-/* FIXED BUG */
-.logout-btn{
-padding:8px 16px;
-border-radius:8px;
-background:#111;
-color:#fff;
-text-decoration:none;
-font-size:14px;
-margin-left:12px;
+box-shadow:0 6px 20px rgba(0,0,0,0.35);
 }
 
 .logo{
@@ -234,140 +75,286 @@ font-size:18px;
 font-weight:600;
 }
 
+.logout-btn{
+padding:8px 16px;
+background:#222;
+color:#fff;
+text-decoration:none;
+border-radius:8px;
+margin-left:12px;
+}
+
+.logout-btn:hover{
+background:#444;
+}
+
+.container{
+max-width:1350px;
+margin:auto;
+background:#fff;
+padding:50px;
+border-radius:22px;
+box-shadow:0 30px 70px rgba(0,0,0,0.10);
+}
+
+h1{
+font-size:32px;
+margin-bottom:10px;
+}
+
+.sub{
+color:#777;
+font-size:14px;
+margin-bottom:25px;
+}
+
+.search-box{
+margin-bottom:25px;
+display:flex;
+gap:10px;
+}
+
+.search-box input{
+padding:12px;
+width:300px;
+border:1px solid #ddd;
+border-radius:10px;
+outline:none;
+}
+
+.search-box button{
+padding:12px 18px;
+background:#111;
+color:#fff;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
+
+.search-box button:hover{
+background:#444;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#111;
+color:#fff;
+padding:14px;
+font-size:14px;
+text-align:left;
+}
+
+td{
+padding:14px;
+border-bottom:1px solid #eee;
+font-size:14px;
+vertical-align:top;
+}
+
+tr:hover{
+background:#f8f9fb;
+}
+
+.badge{
+padding:6px 10px;
+border-radius:30px;
+font-size:12px;
+font-weight:600;
+display:inline-block;
+}
+
+.pending{
+background:#eef4ff;
+color:#2563eb;
+}
+
+.approved{
+background:#eafaf1;
+color:#27ae60;
+}
+
+.rejected{
+background:#fff0f0;
+color:#e74c3c;
+}
+
+.btn{
+padding:8px 12px;
+text-decoration:none;
+border-radius:8px;
+font-size:13px;
+margin-right:5px;
+display:inline-block;
+margin-bottom:5px;
+}
+
+.approve-btn{
+background:#27ae60;
+color:#fff;
+}
+
+.reject-btn{
+background:#e74c3c;
+color:#fff;
+}
+
+.return-btn{
+background:#111;
+color:#fff;
+}
+
+.btn:hover{
+opacity:0.85;
+}
+
+.back-btn{
+display:inline-block;
+margin-top:25px;
+padding:12px 18px;
+background:#111;
+color:#fff;
+text-decoration:none;
+border-radius:8px;
+}
+
+.back-btn:hover{
+background:#444;
+}
+
+.empty{
+padding:18px;
+background:#fafafa;
+border:1px solid #eee;
+border-radius:10px;
+margin-top:15px;
+}
+
 </style>
+
+<script>
+function approveConfirm(){
+return confirm("Approve this leave request?");
+}
+
+function rejectConfirm(){
+return confirm("Reject this leave request?");
+}
+
+function returnConfirm(){
+return confirm("Mark student as returned?");
+}
+</script>
 
 </head>
 
 <body>
 
 <div class="topbar">
-
 <div class="logo">Hostel Leave System</div>
 
 <div>
 <?php echo $_SESSION["username"]; ?>
 <a class="logout-btn" href="../auth/logout.php">Logout</a>
 </div>
-
 </div>
 
 <div class="container">
 
 <h1>Leave Requests</h1>
+<div class="sub">Review, approve, reject and manage student leave requests.</div>
 
-<div class="stats">
+<form method="GET" class="search-box">
+<input type="text" name="search" placeholder="Search student name / register no" value="<?php echo htmlspecialchars($search); ?>">
+<button type="submit">Search</button>
+</form>
 
-<div class="stat-card">
-<p>Total Requests</p>
-<h2><?php echo $total; ?></h2>
-</div>
+<?php if($result->num_rows > 0) { ?>
 
-<div class="stat-card">
-<p>Pending</p>
-<h2><?php echo $pending; ?></h2>
-</div>
+<table>
 
-<div class="stat-card">
-<p>Approved</p>
-<h2><?php echo $approved; ?></h2>
-</div>
+<tr>
+<th>Student</th>
+<th>Reg No</th>
+<th>From</th>
+<th>To</th>
+<th>Reason</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
 
-<div class="stat-card">
-<p>Returned</p>
-<h2><?php echo $returned; ?></h2>
-</div>
+<?php while($row = $result->fetch_assoc()) { ?>
 
-</div>
+<tr>
+
+<td><?php echo htmlspecialchars($row["name"]); ?></td>
+
+<td><?php echo htmlspecialchars($row["register_number"]); ?></td>
+
+<td><?php echo htmlspecialchars($row["from_datetime"]); ?></td>
+
+<td><?php echo htmlspecialchars($row["to_datetime"]); ?></td>
+
+<td><?php echo htmlspecialchars($row["reason"]); ?></td>
+
+<td>
 
 <?php
+$status = $row["status"];
 
-if (mysqli_num_rows($result) == 0) {
-
-    echo "No leave requests.";
-
-} else {
-
-while ($row = mysqli_fetch_assoc($result)) {
-
-$status = strtolower($row["status"]);
-
+if($status=="Pending"){
+echo "<span class='badge pending'>Pending</span>";
+}
+elseif($status=="Approved"){
+echo "<span class='badge approved'>Approved</span>";
+}
+else{
+echo "<span class='badge rejected'>Rejected</span>";
+}
 ?>
 
-<div class="card">
+</td>
 
-<div class="card-header">
+<td>
 
-<div class="student">
-<?php echo htmlspecialchars($row["name"]); ?>
-</div>
+<?php if($row["status"]=="Pending") { ?>
 
-<div class="status <?php echo $status; ?>">
-<?php echo htmlspecialchars($row["status"]); ?>
-</div>
+<a class="btn approve-btn"
+href="approve_leave.php?id=<?php echo $row['id']; ?>&action=approve"
+onclick="return approveConfirm()">Approve</a>
 
-</div>
-
-<div class="row">
-<strong>Leave Type:</strong> <?php echo htmlspecialchars($row["type_name"]); ?>
-</div>
-
-<div class="row">
-<strong>From:</strong> <?php echo htmlspecialchars($row["from_datetime"]); ?>
-</div>
-
-<div class="row">
-<strong>To:</strong> <?php echo htmlspecialchars($row["to_datetime"]); ?>
-</div>
-
-<div class="row">
-<strong>Reason:</strong> <?php echo htmlspecialchars($row["reason"]); ?>
-</div>
-
-<!-- ✅ NEW: MESS CUT -->
-<div class="row">
-<strong>Mess Cut:</strong> 
-<span style="color: <?php echo $row["mess_cut"] ? "green" : "red"; ?>">
-<?php echo $row["mess_cut"] ? "Yes 🍽️" : "No"; ?>
-</span>
-</div>
-
-<?php if ($row["returned_at"] != NULL) { ?>
-
-<div class="row">
-<strong>Returned At:</strong> <?php echo htmlspecialchars($row["returned_at"]); ?>
-</div>
+<a class="btn reject-btn"
+href="approve_leave.php?id=<?php echo $row['id']; ?>&action=reject"
+onclick="return rejectConfirm()">Reject</a>
 
 <?php } ?>
 
-<div class="actions">
+<?php if($row["status"]=="Approved" && $row["returned_at"]==NULL) { ?>
 
-<?php
+<a class="btn return-btn"
+href="mark_returned.php?id=<?php echo $row['id']; ?>"
+onclick="return returnConfirm()">Mark Returned</a>
 
-if ($row["status"] == "Pending") {
+<?php } ?>
 
-echo "<a class='approve' href='approve_leave.php?id=".$row["id"]."&action=approve'>Approve</a>";
-echo "<a class='reject' href='approve_leave.php?id=".$row["id"]."&action=reject'>Reject</a>";
+</td>
 
-}
+</tr>
 
-if ($row["status"] == "Approved" && $row["returned_at"] == NULL) {
+<?php } ?>
 
-echo "<a class='return' href='mark_returned.php?id=".$row["id"]."'>Mark Returned</a>";
+</table>
 
-}
+<?php } else { ?>
 
-?>
+<div class="empty">No leave requests found.</div>
 
-</div>
+<?php } ?>
 
-</div>
-
-<?php
-}
-}
-?>
-
-<a class="back-btn" href="dashboard.php">← Back to Dashboard</a>
+<a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
 
 </div>
 

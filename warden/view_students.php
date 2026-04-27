@@ -7,28 +7,50 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
-/* Fetch students */
-$stmt = $conn->prepare("
-SELECT 
-    users.id,
-    users.name,
-    users.email,
-    student_profiles.register_number,
-    student_profiles.department,
-    student_profiles.year,
-    student_profiles.room_number,
-    student_profiles.phone
-FROM users
-JOIN student_profiles 
-ON users.id = student_profiles.user_id
-JOIN roles 
-ON users.role_id = roles.id
-WHERE roles.role_name = 'student'
-ORDER BY users.name
-");
+$search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
 
-$stmt->execute();
-$result = $stmt->get_result();
+if ($search != "") {
+
+    $stmt = $conn->prepare("
+    SELECT users.id, users.name, users.email,
+           student_profiles.register_number,
+           student_profiles.department,
+           student_profiles.year,
+           student_profiles.room_number,
+           student_profiles.phone
+    FROM users
+    LEFT JOIN student_profiles ON users.id = student_profiles.user_id
+    JOIN roles ON users.role_id = roles.id
+    WHERE roles.role_name='student'
+    AND (
+        users.name LIKE ?
+        OR student_profiles.register_number LIKE ?
+        OR student_profiles.department LIKE ?
+    )
+    ORDER BY users.name ASC
+    ");
+
+    $like = "%$search%";
+    $stmt->bind_param("sss", $like, $like, $like);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+} else {
+
+    $result = $conn->query("
+    SELECT users.id, users.name, users.email,
+           student_profiles.register_number,
+           student_profiles.department,
+           student_profiles.year,
+           student_profiles.room_number,
+           student_profiles.phone
+    FROM users
+    LEFT JOIN student_profiles ON users.id = student_profiles.user_id
+    JOIN roles ON users.role_id = roles.id
+    WHERE roles.role_name='student'
+    ORDER BY users.name ASC
+    ");
+}
 ?>
 
 <!DOCTYPE html>
@@ -50,11 +72,9 @@ font-family:'Poppins',sans-serif;
 
 body{
 min-height:100vh;
-background: linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
-padding:120px 60px 60px 60px;
+background:linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
+padding:120px 50px 50px 50px;
 }
-
-/* TOPBAR */
 
 .topbar{
 position:fixed;
@@ -63,136 +83,154 @@ left:0;
 width:100%;
 height:70px;
 background:#111;
-
 display:flex;
 justify-content:space-between;
 align-items:center;
-
-padding:0 60px;
+padding:0 50px;
 color:#fff;
-
-box-shadow:0 6px 20px rgba(0,0,0,0.35);
-border-bottom:1px solid #222;
-
 z-index:1000;
+box-shadow:0 6px 20px rgba(0,0,0,0.35);
 }
 
 .logo{
 font-size:18px;
 font-weight:600;
-letter-spacing:0.5px;
 }
-
-.topbar a{
-text-decoration:none;
-color:#fff;
-font-weight:500;
-}
-
-/* LOGOUT BUTTON */
 
 .logout-btn{
 padding:8px 16px;
-border-radius:8px;
-background:#111;
-color:1#fff;
+background:#222;
+color:#fff;
 text-decoration:none;
-font-size:14px;
-font-weight:500;
+border-radius:8px;
 margin-left:12px;
-transition:0.2s;
 }
 
 .logout-btn:hover{
-background: rgba(255, 255, 238, 0.15);
+background:#444;
 }
 
-/* CONTAINER */
-
 .container{
-max-width:1200px;
+max-width:1400px;
 margin:auto;
-padding:50px;
 background:#fff;
-border-radius:22px;
-
-box-shadow:
-0 40px 90px rgba(0,0,0,0.12),
-0 15px 35px rgba(0,0,0,0.08);
+padding:50px;
+border-radius:24px;
+box-shadow:0 30px 70px rgba(0,0,0,0.10);
 }
 
 h1{
+font-size:32px;
+margin-bottom:10px;
+}
+
+.sub{
+color:#777;
+font-size:14px;
 margin-bottom:25px;
 }
 
-/* TABLE */
+.search-box{
+display:flex;
+gap:10px;
+margin-bottom:25px;
+}
+
+.search-box input{
+padding:12px;
+width:320px;
+border:1px solid #ddd;
+border-radius:10px;
+outline:none;
+}
+
+.search-box button{
+padding:12px 18px;
+background:#111;
+color:#fff;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
+
+.search-box button:hover{
+background:#444;
+}
 
 table{
 width:100%;
 border-collapse:collapse;
-background:#fff;
-}
-
-th,td{
-padding:12px;
-border-bottom:1px solid #eee;
-text-align:left;
-font-size:14px;
 }
 
 th{
 background:#111;
 color:#fff;
-font-weight:500;
+padding:14px;
+font-size:14px;
+text-align:left;
+}
+
+td{
+padding:14px;
+border-bottom:1px solid #eee;
+font-size:14px;
 }
 
 tr:hover{
-background:#f7f7f7;
+background:#f8f9fb;
 }
 
-/* ACTION BUTTONS */
-
-.action-btn{
-padding:6px 12px;
+.btn{
+padding:8px 12px;
 text-decoration:none;
-border-radius:6px;
+border-radius:8px;
 font-size:13px;
+display:inline-block;
 margin-right:6px;
 }
 
 .edit{
 background:#111;
-color:white;
+color:#fff;
 }
 
 .delete{
 background:#e74c3c;
-color:white;
+color:#fff;
 }
 
-.action-btn:hover{
+.btn:hover{
 opacity:0.85;
 }
 
-/* BACK BUTTON */
+.empty{
+padding:18px;
+background:#fafafa;
+border:1px solid #eee;
+border-radius:10px;
+}
 
 .back-btn{
 display:inline-block;
-margin-top:20px;
-padding:10px 14px;
-border:1px solid #111;
-border-radius:8px;
-text-decoration:none;
-color:#fff;
+margin-top:25px;
+padding:12px 18px;
 background:#111;
+color:#fff;
+text-decoration:none;
+border-radius:8px;
 }
 
 .back-btn:hover{
 background:#444;
-color:#fff;
 }
 
 </style>
+
+<script>
+function deleteConfirm(){
+return confirm("Are you sure you want to delete this student?");
+}
+</script>
 
 </head>
 
@@ -212,12 +250,20 @@ color:#fff;
 <div class="container">
 
 <h1>Student List</h1>
+<div class="sub">View and manage registered hostel students.</div>
+
+<form method="GET" class="search-box">
+<input type="text" name="search" placeholder="Search name / register no / department" value="<?php echo htmlspecialchars($search); ?>">
+<button type="submit">Search</button>
+</form>
+
+<?php if($result->num_rows > 0) { ?>
 
 <table>
 
 <tr>
 <th>Name</th>
-<th>Register Number</th>
+<th>Register No</th>
 <th>Department</th>
 <th>Year</th>
 <th>Room</th>
@@ -230,24 +276,24 @@ color:#fff;
 
 <tr>
 
-<td><?php echo $row["name"]; ?></td>
-<td><?php echo $row["register_number"]; ?></td>
-<td><?php echo $row["department"]; ?></td>
-<td><?php echo $row["year"]; ?></td>
-<td><?php echo $row["room_number"]; ?></td>
-<td><?php echo $row["phone"]; ?></td>
-<td><?php echo $row["email"]; ?></td>
+<td><?php echo htmlspecialchars($row["name"]); ?></td>
+<td><?php echo htmlspecialchars($row["register_number"]); ?></td>
+<td><?php echo htmlspecialchars($row["department"]); ?></td>
+<td><?php echo htmlspecialchars($row["year"]); ?></td>
+<td><?php echo htmlspecialchars($row["room_number"]); ?></td>
+<td><?php echo htmlspecialchars($row["phone"]); ?></td>
+<td><?php echo htmlspecialchars($row["email"]); ?></td>
 
 <td>
 
-<a class="action-btn edit"
+<a class="btn edit"
 href="edit_student.php?id=<?php echo $row['id']; ?>">
 Edit
 </a>
 
-<a class="action-btn delete"
+<a class="btn delete"
 href="delete_student.php?id=<?php echo $row['id']; ?>"
-onclick="return confirm('Are you sure you want to delete this student?');">
+onclick="return deleteConfirm()">
 Delete
 </a>
 
@@ -259,7 +305,13 @@ Delete
 
 </table>
 
-<a class="back-btn" href="dashboard.php">← Back to Dashboard</a>
+<?php } else { ?>
+
+<div class="empty">No students found.</div>
+
+<?php } ?>
+
+<a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
 
 </div>
 
