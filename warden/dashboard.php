@@ -13,7 +13,7 @@ SELECT COUNT(*) AS c
 FROM hostel_leaves
 ")->fetch_assoc()["c"];
 
-/* PENDING */
+/* PENDING REQUESTS */
 $pending = $conn->query("
 SELECT COUNT(*) AS c
 FROM hostel_leaves
@@ -22,19 +22,20 @@ WHERE status='Pending'
 
 /* STUDENTS OUTSIDE (Approved + Unauthorized Today) */
 $out_students = $conn->query("
-SELECT COUNT(*) AS c FROM (
+SELECT COUNT(DISTINCT uid) AS c
+FROM (
 
-SELECT DISTINCT student_id AS uid
-FROM hostel_leaves
-WHERE status='Approved'
-AND returned_at IS NULL
+    SELECT student_id AS uid
+    FROM hostel_leaves
+    WHERE status='Approved'
+    AND returned_at IS NULL
 
-UNION
+    UNION
 
-SELECT DISTINCT user_id AS uid
-FROM attendance
-WHERE date = CURDATE()
-AND remark='Unauthorized'
+    SELECT user_id AS uid
+    FROM attendance
+    WHERE date = CURDATE()
+    AND remark='Unauthorized'
 
 ) x
 ")->fetch_assoc()["c"];
@@ -46,6 +47,13 @@ FROM hostel_leaves
 WHERE status='Approved'
 AND returned_at IS NULL
 AND NOW() > to_datetime
+")->fetch_assoc()["c"];
+
+/* RETURNED TODAY */
+$returned_today = $conn->query("
+SELECT COUNT(*) AS c
+FROM hostel_leaves
+WHERE DATE(returned_at)=CURDATE()
 ")->fetch_assoc()["c"];
 ?>
 
@@ -70,7 +78,7 @@ font-family:'Poppins',sans-serif;
 
 body{
 min-height:100vh;
-background:linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
+background:linear-gradient(135deg,#e8eaef,#f4f5f8,#e6e8ed);
 padding:120px 60px 60px 60px;
 }
 
@@ -86,8 +94,8 @@ justify-content:space-between;
 align-items:center;
 padding:0 60px;
 color:#fff;
-box-shadow:0 6px 20px rgba(0,0,0,0.35);
 z-index:1000;
+box-shadow:0 6px 20px rgba(0,0,0,0.35);
 }
 
 .logo{
@@ -97,11 +105,10 @@ font-weight:600;
 
 .logout-btn{
 padding:8px 16px;
-border-radius:8px;
 background:#222;
 color:#fff;
 text-decoration:none;
-font-size:14px;
+border-radius:8px;
 margin-left:12px;
 }
 
@@ -110,14 +117,12 @@ background:#444;
 }
 
 .dashboard{
-max-width:1200px;
+max-width:1250px;
 margin:auto;
-padding:55px;
 background:#fff;
+padding:55px;
 border-radius:24px;
-box-shadow:
-0 40px 90px rgba(0,0,0,0.12),
-0 15px 35px rgba(0,0,0,0.08);
+box-shadow:0 30px 70px rgba(0,0,0,0.10);
 }
 
 h1{
@@ -125,11 +130,13 @@ font-size:34px;
 margin-bottom:8px;
 }
 
-.subtitle{
+.sub{
 color:#777;
-font-size:15px;
+font-size:14px;
 margin-bottom:35px;
 }
+
+/* STATS */
 
 .stats{
 display:grid;
@@ -138,33 +145,35 @@ gap:18px;
 margin-bottom:35px;
 }
 
-.stat-card{
+.stat{
 padding:24px;
-border-radius:16px;
+border-radius:18px;
 background:linear-gradient(135deg,#ffffff,#f8f9fb);
 border:1px solid #eee;
 box-shadow:0 8px 18px rgba(0,0,0,0.05);
 }
 
-.stat-card h3{
+.stat h3{
 font-size:14px;
 color:#666;
 margin-bottom:8px;
 }
 
-.stat-card p{
+.stat p{
 font-size:30px;
 font-weight:600;
 color:#111;
 }
 
-.actions{
+/* MENU */
+
+.menu{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
 gap:24px;
 }
 
-.action-card{
+.card{
 padding:28px;
 border-radius:18px;
 background:#fff;
@@ -173,34 +182,34 @@ box-shadow:0 12px 25px rgba(0,0,0,0.08);
 transition:0.25s;
 }
 
-.action-card:hover{
+.card:hover{
 transform:translateY(-6px);
 box-shadow:0 20px 40px rgba(0,0,0,0.12);
 }
 
-.action-card h3{
+.card h3{
 margin-bottom:10px;
 font-size:18px;
 }
 
-.action-card p{
+.card p{
 font-size:14px;
 color:#666;
 margin-bottom:18px;
 line-height:1.5;
 }
 
-.action-card a{
+.card a{
 padding:11px 18px;
 background:#111;
 color:#fff;
 text-decoration:none;
 border-radius:10px;
-font-size:14px;
 display:inline-block;
+font-size:14px;
 }
 
-.action-card a:hover{
+.card a:hover{
 background:#444;
 }
 
@@ -222,7 +231,7 @@ color:#777;
 
 <div>
 <?php echo $_SESSION["username"]; ?>
-<a class="logout-btn" href="../auth/logout.php">Logout</a>
+<a href="../auth/logout.php" class="logout-btn">Logout</a>
 </div>
 
 </div>
@@ -230,83 +239,89 @@ color:#777;
 <div class="dashboard">
 
 <h1>Warden Dashboard</h1>
+<div class="sub">Live hostel control panel with real-time updates.</div>
 
-<div class="subtitle">
-Manage hostel leave requests, attendance, reports and student records.
-</div>
+<!-- STATS -->
 
 <div class="stats">
 
-<div class="stat-card">
+<div class="stat">
 <h3>📝 Total Requests</h3>
 <p><?php echo $total_requests; ?></p>
 </div>
 
-<div class="stat-card">
-<h3>⏳ Pending</h3>
+<div class="stat">
+<h3>⏳ Pending Requests</h3>
 <p><?php echo $pending; ?></p>
 </div>
 
-<div class="stat-card">
+<div class="stat">
 <h3>🔴 Students Outside</h3>
 <p><?php echo $out_students; ?></p>
 </div>
 
-<div class="stat-card">
+<div class="stat">
 <h3>⚠️ Late Students</h3>
 <p><?php echo $late_students; ?></p>
 </div>
 
+<div class="stat">
+<h3>↩ Returned Today</h3>
+<p><?php echo $returned_today; ?></p>
 </div>
 
-<div class="actions">
+</div>
 
-<div class="action-card">
+<!-- MENU -->
+
+<div class="menu">
+
+<div class="card">
 <h3>Leave Requests</h3>
-<p>Review and approve student leave applications.</p>
+<p>Approve or reject student leave requests.</p>
 <a href="view_requests.php">Open</a>
 </div>
 
-<div class="action-card">
+<div class="card">
 <h3>Students Outside</h3>
-<p>Monitor students currently outside hostel.</p>
+<p>Monitor current outside and returned students.</p>
 <a href="out_students.php">Open</a>
 </div>
 
-<div class="action-card">
+<div class="card">
+<h3>Attendance</h3>
+<p>Mark daily attendance for hostel students.</p>
+<a href="attendance.php">Open</a>
+</div>
+
+<div class="card">
 <h3>Reports</h3>
-<p>Generate hostel leave analytics and reports.</p>
+<p>View leave analytics and occupancy reports.</p>
 <a href="reports.php">Open</a>
 </div>
 
-<div class="action-card">
-<h3>Add Student</h3>
-<p>Register new students into hostel system.</p>
-<a href="add_student.php">Open</a>
-</div>
-
-<div class="action-card">
-<h3>View Students</h3>
-<p>Browse and manage student records.</p>
+<div class="card">
+<h3>Students</h3>
+<p>View, edit and manage student records.</p>
 <a href="view_students.php">Open</a>
 </div>
 
-<div class="action-card">
-<h3>Late Students</h3>
-<p>Track students who returned late.</p>
-<a href="late_students.php">Open</a>
+<div class="card">
+<h3>Add Student</h3>
+<p>Register new student accounts.</p>
+<a href="add_student.php">Open</a>
 </div>
 
-<div class="action-card">
-<h3>Attendance</h3>
-<p>Mark daily hostel attendance.</p>
-<a href="attendance.php">Open</a>
+<div class="card">
+<h3>Late Students</h3>
+<p>Track students who returned after deadline.</p>
+<a href="late_students.php">Open</a>
 </div>
 
 </div>
 
 <div class="footer">
-Live auto-updating hostel control dashboard.
+Auto-refresh every 10 seconds for live hostel monitoring.
 </div>
 
 </div>

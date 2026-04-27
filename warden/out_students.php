@@ -7,7 +7,7 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
-/* AUTHORIZED STUDENTS OUTSIDE */
+/* CURRENTLY OUTSIDE STUDENTS */
 $leaveResult = $conn->query("
 SELECT hostel_leaves.id,
        hostel_leaves.student_id,
@@ -37,6 +37,18 @@ LEFT JOIN student_profiles ON users.id = student_profiles.user_id
 WHERE attendance.remark='Unauthorized'
 ORDER BY attendance.date DESC
 ");
+
+/* RECENT RETURNS */
+$returnedResult = $conn->query("
+SELECT hostel_leaves.returned_at,
+       hostel_leaves.return_status,
+       users.name
+FROM hostel_leaves
+JOIN users ON hostel_leaves.student_id = users.id
+WHERE hostel_leaves.returned_at IS NOT NULL
+ORDER BY hostel_leaves.returned_at DESC
+LIMIT 10
+");
 ?>
 
 <!DOCTYPE html>
@@ -48,7 +60,6 @@ ORDER BY attendance.date DESC
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
-
 *{
 margin:0;
 padding:0;
@@ -58,7 +69,7 @@ font-family:'Poppins',sans-serif;
 
 body{
 min-height:100vh;
-background:linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
+background:linear-gradient(135deg,#e8eaef,#f4f5f8,#e6e8ed);
 padding:120px 50px 50px 50px;
 }
 
@@ -75,7 +86,6 @@ align-items:center;
 padding:0 50px;
 color:#fff;
 z-index:1000;
-box-shadow:0 6px 20px rgba(0,0,0,0.35);
 }
 
 .logout-btn{
@@ -87,12 +97,8 @@ border-radius:8px;
 margin-left:12px;
 }
 
-.logout-btn:hover{
-background:#444;
-}
-
 .container{
-max-width:1350px;
+max-width:1400px;
 margin:auto;
 background:#fff;
 padding:50px;
@@ -108,27 +114,29 @@ margin-bottom:10px;
 .sub{
 color:#777;
 font-size:14px;
-margin-bottom:30px;
+margin-bottom:25px;
 }
 
-.section-title{
-margin:28px 0 14px;
+.section{
+margin-top:28px;
+}
+
+.section h2{
 font-size:18px;
-font-weight:600;
+margin-bottom:14px;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-bottom:10px;
 }
 
 th{
 background:#111;
 color:#fff;
 padding:14px;
-font-size:14px;
 text-align:left;
+font-size:14px;
 }
 
 td{
@@ -141,34 +149,32 @@ tr:hover{
 background:#f8f9fb;
 }
 
-.empty{
-padding:18px;
-background:#fafafa;
-border:1px solid #eee;
-border-radius:10px;
-margin-bottom:15px;
-}
-
 .btn{
 padding:8px 12px;
 text-decoration:none;
 border-radius:8px;
 font-size:13px;
+color:#fff;
+background:#111;
+}
+
+.badge{
+padding:6px 10px;
+border-radius:30px;
+font-size:12px;
+font-weight:600;
 display:inline-block;
 }
 
-.return-btn{
-background:#111;
-color:#fff;
-}
+.green{background:#eafaf1;color:#27ae60;}
+.red{background:#fff0f0;color:#e74c3c;}
+.blue{background:#eef4ff;color:#2563eb;}
 
-.return-btn:hover{
-background:#444;
-}
-
-.red{
-color:#e74c3c;
-font-weight:600;
+.empty{
+padding:18px;
+background:#fafafa;
+border:1px solid #eee;
+border-radius:10px;
 }
 
 .back-btn{
@@ -180,11 +186,6 @@ color:#fff;
 text-decoration:none;
 border-radius:8px;
 }
-
-.back-btn:hover{
-background:#444;
-}
-
 </style>
 
 <script>
@@ -198,29 +199,27 @@ return confirm("Mark student as returned?");
 <body>
 
 <div class="topbar">
-
 <div>Hostel Leave System</div>
 
 <div>
 <?php echo $_SESSION["username"]; ?>
-<a class="logout-btn" href="../auth/logout.php">Logout</a>
+<a href="../auth/logout.php" class="logout-btn">Logout</a>
 </div>
-
 </div>
 
 <div class="container">
 
 <h1>Student Outing Monitor</h1>
-<div class="sub">Track authorized outside students and unauthorized absentees.</div>
+<div class="sub">Track current outside students, unauthorized absences and recent returns.</div>
 
-<!-- AUTHORIZED -->
+<!-- CURRENT OUTSIDE -->
 
-<div class="section-title">✔ Students Outside (With Permission)</div>
+<div class="section">
+<h2>✔ Students Outside (Approved Leave)</h2>
 
-<?php if($leaveResult->num_rows > 0) { ?>
+<?php if($leaveResult->num_rows > 0){ ?>
 
 <table>
-
 <tr>
 <th>Name</th>
 <th>Department</th>
@@ -230,22 +229,19 @@ return confirm("Mark student as returned?");
 <th>Action</th>
 </tr>
 
-<?php while($row = $leaveResult->fetch_assoc()) { ?>
+<?php while($row = $leaveResult->fetch_assoc()){ ?>
 
 <tr>
-
 <td><?php echo htmlspecialchars($row["name"]); ?></td>
 <td><?php echo htmlspecialchars($row["department"]); ?></td>
 <td><?php echo htmlspecialchars($row["room_number"]); ?></td>
 <td><?php echo htmlspecialchars($row["from_datetime"]); ?></td>
 <td><?php echo htmlspecialchars($row["to_datetime"]); ?></td>
-
 <td>
-<a class="btn return-btn"
+<a class="btn"
 href="mark_returned.php?id=<?php echo $row['id']; ?>"
 onclick="return returnConfirm()">Mark Returned</a>
 </td>
-
 </tr>
 
 <?php } ?>
@@ -253,19 +249,19 @@ onclick="return returnConfirm()">Mark Returned</a>
 </table>
 
 <?php } else { ?>
-
-<div class="empty">No authorized students outside.</div>
-
+<div class="empty">No students currently outside.</div>
 <?php } ?>
+
+</div>
 
 <!-- UNAUTHORIZED -->
 
-<div class="section-title">🚨 Unauthorized Students</div>
+<div class="section">
+<h2>🚨 Unauthorized Students</h2>
 
-<?php if($unauthResult->num_rows > 0) { ?>
+<?php if($unauthResult->num_rows > 0){ ?>
 
 <table>
-
 <tr>
 <th>Name</th>
 <th>Department</th>
@@ -274,16 +270,14 @@ onclick="return returnConfirm()">Mark Returned</a>
 <th>Status</th>
 </tr>
 
-<?php while($row = $unauthResult->fetch_assoc()) { ?>
+<?php while($row = $unauthResult->fetch_assoc()){ ?>
 
 <tr>
-
 <td><?php echo htmlspecialchars($row["name"]); ?></td>
 <td><?php echo htmlspecialchars($row["department"]); ?></td>
 <td><?php echo htmlspecialchars($row["room_number"]); ?></td>
 <td><?php echo htmlspecialchars($row["date"]); ?></td>
-<td class="red"><?php echo htmlspecialchars($row["status"]); ?> (Unauthorized)</td>
-
+<td><span class="badge red">Unauthorized</span></td>
 </tr>
 
 <?php } ?>
@@ -291,10 +285,46 @@ onclick="return returnConfirm()">Mark Returned</a>
 </table>
 
 <?php } else { ?>
-
 <div class="empty">No unauthorized students found.</div>
+<?php } ?>
+
+</div>
+
+<!-- RECENT RETURNS -->
+
+<div class="section">
+<h2>↩ Recent Returns</h2>
+
+<?php if($returnedResult->num_rows > 0){ ?>
+
+<table>
+<tr>
+<th>Name</th>
+<th>Returned At</th>
+<th>Status</th>
+</tr>
+
+<?php while($row = $returnedResult->fetch_assoc()){ ?>
+
+<tr>
+<td><?php echo htmlspecialchars($row["name"]); ?></td>
+<td><?php echo htmlspecialchars($row["returned_at"]); ?></td>
+<td>
+<span class="badge blue">
+<?php echo htmlspecialchars($row["return_status"]); ?>
+</span>
+</td>
+</tr>
 
 <?php } ?>
+
+</table>
+
+<?php } else { ?>
+<div class="empty">No returned students yet.</div>
+<?php } ?>
+
+</div>
 
 <a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
 
