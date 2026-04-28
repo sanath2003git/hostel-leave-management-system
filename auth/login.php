@@ -232,7 +232,7 @@ user-select:none;
 
 <input type="password" name="password" id="password" placeholder="Enter Password" required>
 
-<span class="eye-btn" id="eye" onclick="togglePassword()">👁</span>
+<span class="eye-btn" id="eye" onclick="togglePassword()"><img src="eyebrow.svg" alt="icon" style="width:20px; height:20px;"></span>
 
 </div>
 
