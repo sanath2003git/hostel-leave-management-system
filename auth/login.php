@@ -261,10 +261,10 @@ let eye = document.getElementById("eye");
 
 if(password.type === "password"){
     password.type = "text";
-    eye.innerHTML = "🙈";
+    eye.innerHTML = "👁" ;
 }else{
     password.type = "password";
-    eye.innerHTML = "👁";
+    eye.innerHTML = '<img src="eyebrow.svg" alt="icon" style="width:20px; height:20px;">';
 }
 
 }
