@@ -1,6 +1,9 @@
 <?php
 include("../includes/auth_check.php");
 include("../config/db.php");
+include("../config/mail_config.php");
+
+date_default_timezone_set("Asia/Kolkata");
 
 if ($_SESSION["role"] != "warden") {
     echo "Access Denied";
@@ -17,6 +20,7 @@ if(isset($_POST["save_attendance"])){
     foreach($_POST["status"] as $student_id => $status){
 
         $remark = "Normal";
+        $sendUnauthorizedMail = false;
 
         /* If marked Absent, check approved leave */
         if($status == "Absent"){
@@ -36,10 +40,14 @@ if(isset($_POST["save_attendance"])){
             $leaveResult = $checkLeave->get_result();
 
             if($leaveResult->num_rows > 0){
+
                 $status = "Leave";
                 $remark = "Approved Leave";
+
             }else{
+
                 $remark = "Unauthorized";
+                $sendUnauthorizedMail = true;
             }
         }
 
@@ -76,6 +84,43 @@ if(isset($_POST["save_attendance"])){
 
             $insert->bind_param("isss", $student_id, $date, $status, $remark);
             $insert->execute();
+        }
+
+        /* SEND EMAIL TO PARENT + TEACHER */
+        if($sendUnauthorizedMail){
+
+            $getUser = $conn->prepare("
+            SELECT name, parent_email, teacher_email
+            FROM users
+            WHERE id = ?
+            ");
+
+            $getUser->bind_param("i", $student_id);
+            $getUser->execute();
+
+            $res = $getUser->get_result();
+            $user = $res->fetch_assoc();
+
+            if($user){
+
+                $subject = "Unauthorized Absence Alert";
+
+                $body = "
+                <h3>Attendance Alert</h3>
+                <p><strong>Student:</strong> {$user['name']}</p>
+                <p><strong>Date:</strong> {$date}</p>
+                <p><strong>Status:</strong> Absent without approved leave</p>
+                <p>Please take necessary action.</p>
+                ";
+
+                if(!empty($user["parent_email"])){
+                    sendMail($user["parent_email"], $subject, $body);
+                }
+
+                if(!empty($user["teacher_email"])){
+                    sendMail($user["teacher_email"], $subject, $body);
+                }
+            }
         }
     }
 
