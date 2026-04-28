@@ -7,7 +7,7 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
-/* CURRENTLY OUTSIDE STUDENTS */
+/* CURRENTLY OUTSIDE STUDENTS (Approved Leave) */
 $leaveResult = $conn->query("
 SELECT hostel_leaves.id,
        hostel_leaves.student_id,
@@ -34,8 +34,18 @@ SELECT attendance.date,
 FROM attendance
 JOIN users ON attendance.user_id = users.id
 LEFT JOIN student_profiles ON users.id = student_profiles.user_id
-WHERE attendance.remark='Unauthorized'
-ORDER BY attendance.date DESC
+WHERE attendance.date = CURDATE()
+AND attendance.remark = 'Unauthorized'
+AND users.id NOT IN (
+
+    SELECT student_id
+    FROM hostel_leaves
+    WHERE status='Approved'
+    AND NOW() BETWEEN from_datetime AND to_datetime
+    AND returned_at IS NULL
+
+)
+ORDER BY users.name ASC
 ");
 
 /* RECENT RETURNS */
@@ -54,12 +64,12 @@ LIMIT 10
 <!DOCTYPE html>
 <html>
 <head>
-
 <title>Students Outside</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
+
 *{
 margin:0;
 padding:0;
@@ -166,9 +176,15 @@ font-weight:600;
 display:inline-block;
 }
 
-.green{background:#eafaf1;color:#27ae60;}
-.red{background:#fff0f0;color:#e74c3c;}
-.blue{background:#eef4ff;color:#2563eb;}
+.red{
+background:#fff0f0;
+color:#e74c3c;
+}
+
+.blue{
+background:#eef4ff;
+color:#2563eb;
+}
 
 .empty{
 padding:18px;
@@ -186,6 +202,11 @@ color:#fff;
 text-decoration:none;
 border-radius:8px;
 }
+
+.back-btn:hover{
+background:#444;
+}
+
 </style>
 
 <script>
@@ -210,9 +231,9 @@ return confirm("Mark student as returned?");
 <div class="container">
 
 <h1>Student Outing Monitor</h1>
-<div class="sub">Track current outside students, unauthorized absences and recent returns.</div>
+<div class="sub">Track outside students, unauthorized absences and returns.</div>
 
-<!-- CURRENT OUTSIDE -->
+<!-- OUTSIDE STUDENTS -->
 
 <div class="section">
 <h2>✔ Students Outside (Approved Leave)</h2>
@@ -232,14 +253,14 @@ return confirm("Mark student as returned?");
 <?php while($row = $leaveResult->fetch_assoc()){ ?>
 
 <tr>
-<td><?php echo htmlspecialchars($row["name"]); ?></td>
-<td><?php echo htmlspecialchars($row["department"]); ?></td>
-<td><?php echo htmlspecialchars($row["room_number"]); ?></td>
-<td><?php echo htmlspecialchars($row["from_datetime"]); ?></td>
-<td><?php echo htmlspecialchars($row["to_datetime"]); ?></td>
+<td><?php echo $row["name"]; ?></td>
+<td><?php echo $row["department"]; ?></td>
+<td><?php echo $row["room_number"]; ?></td>
+<td><?php echo $row["from_datetime"]; ?></td>
+<td><?php echo $row["to_datetime"]; ?></td>
 <td>
 <a class="btn"
-href="mark_returned.php?id=<?php echo $row['id']; ?>"
+href="mark_returned.php?id=<?php echo $row["id"]; ?>"
 onclick="return returnConfirm()">Mark Returned</a>
 </td>
 </tr>
@@ -254,7 +275,7 @@ onclick="return returnConfirm()">Mark Returned</a>
 
 </div>
 
-<!-- UNAUTHORIZED -->
+<!-- UNAUTHORIZED STUDENTS -->
 
 <div class="section">
 <h2>🚨 Unauthorized Students</h2>
@@ -273,10 +294,10 @@ onclick="return returnConfirm()">Mark Returned</a>
 <?php while($row = $unauthResult->fetch_assoc()){ ?>
 
 <tr>
-<td><?php echo htmlspecialchars($row["name"]); ?></td>
-<td><?php echo htmlspecialchars($row["department"]); ?></td>
-<td><?php echo htmlspecialchars($row["room_number"]); ?></td>
-<td><?php echo htmlspecialchars($row["date"]); ?></td>
+<td><?php echo $row["name"]; ?></td>
+<td><?php echo $row["department"]; ?></td>
+<td><?php echo $row["room_number"]; ?></td>
+<td><?php echo $row["date"]; ?></td>
 <td><span class="badge red">Unauthorized</span></td>
 </tr>
 
@@ -285,7 +306,7 @@ onclick="return returnConfirm()">Mark Returned</a>
 </table>
 
 <?php } else { ?>
-<div class="empty">No unauthorized students found.</div>
+<div class="empty">No unauthorized students found today.</div>
 <?php } ?>
 
 </div>
@@ -307,13 +328,9 @@ onclick="return returnConfirm()">Mark Returned</a>
 <?php while($row = $returnedResult->fetch_assoc()){ ?>
 
 <tr>
-<td><?php echo htmlspecialchars($row["name"]); ?></td>
-<td><?php echo htmlspecialchars($row["returned_at"]); ?></td>
-<td>
-<span class="badge blue">
-<?php echo htmlspecialchars($row["return_status"]); ?>
-</span>
-</td>
+<td><?php echo $row["name"]; ?></td>
+<td><?php echo $row["returned_at"]; ?></td>
+<td><span class="badge blue"><?php echo $row["return_status"]; ?></span></td>
 </tr>
 
 <?php } ?>

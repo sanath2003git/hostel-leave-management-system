@@ -174,6 +174,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
 
+        /* PASSWORD BOX */
+
+.password-box{
+position:relative;
+width:100%;
+}
+
+.password-box input{
+width:100%;
+padding:14px 45px 14px 14px;
+border:1px solid #ddd;
+border-radius:12px;
+outline:none;
+font-size:16px;
+}
+
+.eye-btn{
+position:absolute;
+right:15px;
+top:50%;
+transform:translateY(-50%);
+cursor:pointer;
+font-size:18px;
+user-select:none;
+}
+
     </style>
 </head>
 <body>
@@ -197,8 +223,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" required>
+                <!-- PASSWORD FIELD -->
+<div class="input-group">
+
+<label>Password</label>
+
+<div class="password-box">
+
+<input type="password" name="password" id="password" placeholder="Enter Password" required>
+
+<span class="eye-btn" id="eye" onclick="togglePassword()">👁</span>
+
+</div>
+
+</div>
             </div>
 
             <div class="form-options">
@@ -215,6 +253,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="login-right"></div>
 
 </div>
+<script>
+function togglePassword(){
+
+let password = document.getElementById("password");
+let eye = document.getElementById("eye");
+
+if(password.type === "password"){
+    password.type = "text";
+    eye.innerHTML = "🙈";
+}else{
+    password.type = "password";
+    eye.innerHTML = "👁";
+}
+
+}
+</script>
 
 </body>
 </html>

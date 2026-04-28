@@ -7,80 +7,98 @@ if ($_SESSION["role"] != "warden") {
     exit();
 }
 
-/* FETCH STUDENTS */
-$query = "
-SELECT users.id, users.name
-FROM users
-JOIN roles ON users.role_id = roles.id
-WHERE roles.role_name='student'
-ORDER BY users.name ASC
-";
-
-$result = mysqli_query($conn, $query);
+$success = "";
 
 /* SAVE ATTENDANCE */
-if (isset($_POST['submit'])) {
+if(isset($_POST["save_attendance"])){
 
     $date = date("Y-m-d");
-    $warden_id = $_SESSION['user_id'];
 
-    foreach ($_POST['attendance'] as $user_id => $status) {
+    foreach($_POST["status"] as $student_id => $status){
 
-        /* CHECK APPROVED LEAVE */
-        $leaveQuery = "
-        SELECT id
-        FROM hostel_leaves
-        WHERE student_id = ?
-        AND status='Approved'
-        AND DATE(from_datetime) <= ?
-        AND DATE(to_datetime) >= ?
-        AND returned_at IS NULL
-        ";
+        $remark = "Normal";
 
-        $stmt = $conn->prepare($leaveQuery);
-        $stmt->bind_param("iss", $user_id, $date, $date);
-        $stmt->execute();
-        $leaveResult = $stmt->get_result();
+        /* If marked Absent, check approved leave */
+        if($status == "Absent"){
 
-        $hasLeave = $leaveResult->num_rows > 0;
+            $checkLeave = $conn->prepare("
+            SELECT id
+            FROM hostel_leaves
+            WHERE student_id = ?
+            AND status = 'Approved'
+            AND ? BETWEEN DATE(from_datetime) AND DATE(to_datetime)
+            AND returned_at IS NULL
+            LIMIT 1
+            ");
 
-        if ($status == "Absent") {
+            $checkLeave->bind_param("is", $student_id, $date);
+            $checkLeave->execute();
+            $leaveResult = $checkLeave->get_result();
 
-            if ($hasLeave) {
-                $finalStatus = "Leave";
-                $remark = "Normal";
-            } else {
-                $finalStatus = "Absent";
+            if($leaveResult->num_rows > 0){
+                $status = "Leave";
+                $remark = "Approved Leave";
+            }else{
                 $remark = "Unauthorized";
             }
-
-        } else {
-
-            $finalStatus = "Present";
-            $remark = "Normal";
         }
 
-        $stmt = $conn->prepare("
-        INSERT INTO attendance(user_id,date,status,remark,marked_by)
-        VALUES(?,?,?,?,?)
-        ON DUPLICATE KEY UPDATE
-        status=VALUES(status),
-        remark=VALUES(remark),
-        marked_by=VALUES(marked_by)
+        /* Check if attendance already exists today */
+        $check = $conn->prepare("
+        SELECT id
+        FROM attendance
+        WHERE user_id = ?
+        AND date = ?
         ");
 
-        $stmt->bind_param("isssi", $user_id, $date, $finalStatus, $remark, $warden_id);
-        $stmt->execute();
+        $check->bind_param("is", $student_id, $date);
+        $check->execute();
+        $already = $check->get_result();
+
+        if($already->num_rows > 0){
+
+            $update = $conn->prepare("
+            UPDATE attendance
+            SET status = ?, remark = ?
+            WHERE user_id = ?
+            AND date = ?
+            ");
+
+            $update->bind_param("ssis", $status, $remark, $student_id, $date);
+            $update->execute();
+
+        }else{
+
+            $insert = $conn->prepare("
+            INSERT INTO attendance(user_id,date,status,remark)
+            VALUES(?,?,?,?)
+            ");
+
+            $insert->bind_param("isss", $student_id, $date, $status, $remark);
+            $insert->execute();
+        }
     }
 
-    $success = "Attendance saved successfully!";
+    $success = "Attendance saved successfully.";
 }
+
+/* FETCH STUDENTS */
+$students = $conn->query("
+SELECT users.id,
+       users.name,
+       student_profiles.department,
+       student_profiles.room_number
+FROM users
+JOIN roles ON users.role_id = roles.id
+LEFT JOIN student_profiles ON users.id = student_profiles.user_id
+WHERE roles.role_name = 'student'
+ORDER BY users.name ASC
+");
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-
 <title>Attendance</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -95,9 +113,8 @@ font-family:'Poppins',sans-serif;
 }
 
 body{
-min-height:100vh;
-background:linear-gradient(135deg,#e8eaef 0%,#f4f5f8 40%,#e6e8ed 100%);
-padding:120px 50px 50px 50px;
+background:linear-gradient(135deg,#dcdde1,#eceef2,#d6d8de);
+padding:120px 50px 50px;
 }
 
 .topbar{
@@ -107,117 +124,86 @@ left:0;
 width:100%;
 height:70px;
 background:#111;
+color:#fff;
 display:flex;
 justify-content:space-between;
 align-items:center;
 padding:0 50px;
-color:#fff;
 z-index:1000;
-box-shadow:0 6px 20px rgba(0,0,0,0.35);
 }
 
-.logout-btn{
-padding:8px 16px;
-background:#222;
+.topbar a{
 color:#fff;
 text-decoration:none;
-border-radius:8px;
-margin-left:12px;
-}
-
-.logout-btn:hover{
-background:#444;
+margin-left:20px;
 }
 
 .container{
-max-width:1100px;
+max-width:1150px;
 margin:auto;
 background:#fff;
 padding:50px;
-border-radius:24px;
-box-shadow:0 30px 70px rgba(0,0,0,0.10);
+border-radius:22px;
+box-shadow:
+0 30px 80px rgba(0,0,0,0.12),
+0 10px 25px rgba(0,0,0,0.08);
 }
 
 h1{
-font-size:32px;
-margin-bottom:10px;
+font-size:34px;
+margin-bottom:8px;
 }
 
 .sub{
-color:#777;
-font-size:14px;
+color:#666;
 margin-bottom:25px;
+font-size:14px;
 }
 
 .success{
-padding:14px;
 background:#eafaf1;
 color:#27ae60;
-border-radius:10px;
-margin-bottom:20px;
-font-size:14px;
-}
-
-.actions{
-margin-bottom:18px;
-}
-
-.small-btn{
-padding:10px 14px;
-background:#111;
-color:#fff;
-border:none;
+padding:12px;
 border-radius:8px;
-cursor:pointer;
-margin-right:10px;
-}
-
-.small-btn:hover{
-background:#444;
+margin-bottom:20px;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
+margin-top:20px;
 }
 
 th{
 background:#111;
 color:#fff;
 padding:14px;
-font-size:14px;
 text-align:left;
 }
 
 td{
 padding:14px;
 border-bottom:1px solid #eee;
-font-size:14px;
-}
-
-tr:hover{
-background:#f8f9fb;
 }
 
 select{
-padding:10px 12px;
-border:1px solid #ddd;
+padding:8px 10px;
 border-radius:8px;
+border:1px solid #ccc;
 outline:none;
 }
 
-.save-btn{
+button{
 margin-top:25px;
-padding:12px 18px;
-background:#111;
-color:#fff;
+padding:12px 20px;
 border:none;
 border-radius:8px;
+background:#111;
+color:#fff;
 cursor:pointer;
-font-size:14px;
 }
 
-.save-btn:hover{
+button:hover{
 background:#444;
 }
 
@@ -237,83 +223,62 @@ background:#444;
 }
 
 </style>
-
-<script>
-function markAllPresent(){
-let selects = document.querySelectorAll("select");
-selects.forEach(function(sel){
-sel.value = "Present";
-});
-}
-
-function markAllAbsent(){
-let selects = document.querySelectorAll("select");
-selects.forEach(function(sel){
-sel.value = "Absent";
-});
-}
-</script>
-
 </head>
 
 <body>
 
 <div class="topbar">
-
 <div>Hostel Leave System</div>
 
 <div>
-<?php echo $_SESSION["username"]; ?>
-<a class="logout-btn" href="../auth/logout.php">Logout</a>
+<?php echo $_SESSION["username"]; ?> |
+<a href="../auth/logout.php">Logout</a>
 </div>
-
 </div>
 
 <div class="container">
 
-<h1>Attendance</h1>
-<div class="sub">Mark daily student attendance records.</div>
+<h1>Daily Attendance</h1>
+<div class="sub">Absent students with approved leave will be marked as Leave automatically.</div>
 
-<?php if(isset($success)) { ?>
+<?php if($success != ""){ ?>
 <div class="success"><?php echo $success; ?></div>
 <?php } ?>
-
-<div class="actions">
-<button type="button" class="small-btn" onclick="markAllPresent()">Mark All Present</button>
-<button type="button" class="small-btn" onclick="markAllAbsent()">Mark All Absent</button>
-</div>
 
 <form method="POST">
 
 <table>
 
 <tr>
-<th>Student Name</th>
+<th>Name</th>
+<th>Department</th>
+<th>Room</th>
 <th>Status</th>
 </tr>
 
-<?php while($row = mysqli_fetch_assoc($result)) { ?>
+<?php while($row = $students->fetch_assoc()){ ?>
 
 <tr>
-
-<td><?php echo htmlspecialchars($row['name']); ?></td>
-
+<td><?php echo $row["name"]; ?></td>
+<td><?php echo $row["department"]; ?></td>
+<td><?php echo $row["room_number"]; ?></td>
 <td>
-<select name="attendance[<?php echo $row['id']; ?>]">
+
+<select name="status[<?php echo $row["id"]; ?>]">
 <option value="Present">Present</option>
 <option value="Absent">Absent</option>
 </select>
-</td>
 
+</td>
 </tr>
 
 <?php } ?>
 
 </table>
 
-<button type="submit" name="submit" class="save-btn">Save Attendance</button>
+<button type="submit" name="save_attendance">Save Attendance</button>
 
-<a href="dashboard.php" class="back-btn">← Back</a>
+<a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
 
 </form>
 

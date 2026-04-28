@@ -40,7 +40,8 @@ if ($action == "approve") {
 
     $update = $conn->prepare("
     UPDATE hostel_leaves
-    SET status='Approved'
+    SET status='Approved',
+        mess_cut=1
     WHERE id=?
     ");
 
@@ -55,6 +56,7 @@ if ($action == "approve") {
     <p><strong>From:</strong> {$data['from_datetime']}</p>
     <p><strong>To:</strong> {$data['to_datetime']}</p>
     <p><strong>Status:</strong> Approved</p>
+    <p>Mess cut has been activated automatically.</p>
     <p>Your leave request has been approved by the warden.</p>
     ";
 

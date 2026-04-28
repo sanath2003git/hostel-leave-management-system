@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 27, 2026 at 05:06 PM
+-- Generation Time: Apr 28, 2026 at 04:47 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -37,18 +37,6 @@ CREATE TABLE `attendance` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `attendance`
---
-
-INSERT INTO `attendance` (`id`, `user_id`, `date`, `status`, `remark`, `marked_by`, `created_at`) VALUES
-(1, 6, '2026-03-30', 'Absent', 'Unauthorized', 3, '2026-03-30 18:40:08'),
-(2, 7, '2026-03-30', 'Present', 'Normal', 3, '2026-03-30 18:40:08'),
-(3, 18, '2026-03-30', 'Present', 'Normal', 3, '2026-03-30 18:40:08'),
-(7, 6, '2026-04-27', 'Absent', 'Unauthorized', 3, '2026-04-27 12:41:35'),
-(8, 7, '2026-04-27', 'Absent', 'Unauthorized', 3, '2026-04-27 12:41:35'),
-(9, 18, '2026-04-27', 'Absent', 'Unauthorized', 3, '2026-04-27 12:41:35');
-
 -- --------------------------------------------------------
 
 --
@@ -65,18 +53,9 @@ CREATE TABLE `hostel_leaves` (
   `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
   `applied_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `returned_at` datetime DEFAULT NULL,
-  `mess_cut` tinyint(1) NOT NULL DEFAULT 0
+  `mess_cut` tinyint(1) NOT NULL DEFAULT 0,
+  `return_status` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `hostel_leaves`
---
-
-INSERT INTO `hostel_leaves` (`id`, `student_id`, `leave_type_id`, `from_datetime`, `to_datetime`, `reason`, `status`, `applied_at`, `returned_at`, `mess_cut`) VALUES
-(9, 6, 8, '2026-03-03 16:10:00', '2026-03-04 05:09:00', 'group study', 'Approved', '2026-03-03 17:40:31', '2026-03-05 15:21:23', 0),
-(10, 6, 6, '2026-03-05 16:08:00', '2026-03-08 15:08:00', 'sick', 'Approved', '2026-03-05 09:39:00', '2026-03-05 15:21:21', 0),
-(11, 7, 5, '2026-03-05 15:13:00', '2026-03-07 15:16:00', 'NULL', 'Approved', '2026-03-05 09:44:11', '2026-03-05 15:21:18', 0),
-(12, 6, 6, '2026-03-05 16:07:00', '2026-03-20 16:07:00', 'home visit', 'Approved', '2026-03-05 10:37:31', '2026-03-31 00:03:16', 0);
 
 -- --------------------------------------------------------
 
@@ -162,7 +141,8 @@ INSERT INTO `student_list__mca_2k25` (`id`, `register_number`, `name`, `email`, 
 (1, '2515', 'CS SANATH SREEKUMAR', '2515@tkmce.ac.in', '2511@tkmce.ac.in', '2558@tkmce.ac.in', 'MCA', 1, '9999999999'),
 (2, '2558', 'B SANJAY RAM  ', '2558@tkmce.ac.in', '2558@tkmce.ac.in', '2558@tkmce.ac.in', 'MCA', 1, '9999999999'),
 (3, '2511', 'BRIAN PETER BERNARD', '2511@tkmce.ac.in', '2511@tkmce.ac.in', '2511@tkmce.ac.in', 'MCA', 1, '9999999999'),
-(4, '2544', 'ASWIN  S', '2544@tkmce.ac.in', '2544@tkmce.ac.in', '2544@tkmce.ac.in', 'MCA', 1, '9999999999');
+(4, '2544', 'ASWIN  S', '2544@tkmce.ac.in', '2544@tkmce.ac.in', '2544@tkmce.ac.in', 'MCA', 1, '9999999999'),
+(5, '2508', 'SAJEER F M', '2508@tkmce.ac.in', '2508@tkmce.ac.in', '2508@tkmce.ac.in', 'MCA', 1, '9999999999');
 
 -- --------------------------------------------------------
 
@@ -185,9 +165,9 @@ CREATE TABLE `student_profiles` (
 --
 
 INSERT INTO `student_profiles` (`id`, `user_id`, `register_number`, `department`, `year`, `room_number`, `phone`) VALUES
-(2, 6, '2520', 'mca', 2025, '1011', NULL),
-(3, 7, '252111', 'B tech', 2024, '1015', NULL),
-(11, 18, '2511', 'MCA', 1, '205', '9999999999');
+(12, 19, '2515', 'MCA', 1, '101', '9999999999'),
+(13, 20, '2511', 'MCA', 1, '102', '9999999999'),
+(14, 21, '2558', 'MCA', 1, '102', '9999999999');
 
 -- --------------------------------------------------------
 
@@ -204,18 +184,19 @@ CREATE TABLE `users` (
   `email` varchar(100) DEFAULT NULL,
   `parent_email` varchar(100) DEFAULT NULL,
   `teacher_email` varchar(100) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `register_number` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `role_id`, `name`, `username`, `password`, `email`, `parent_email`, `teacher_email`, `created_at`) VALUES
-(3, 2, 'Main Warden', 'warden', '$2y$10$93Ul/A1Q2WdhaPnuGZMzJebt.1pCh.uprf/0DvBRbxclxx9l6rkSe', NULL, NULL, NULL, '2026-03-03 13:31:52'),
-(6, 1, 'sanath', 'sanath', '$2y$10$ttEqidY.X5eZGcETjSHliuH61oIloxTsaXCqWT1EaAqFNkRhgnIGG', 'sanathsreekumar18@gmail.com', 'brianpeterbernard5665@gmail.com', '2515@tkmce.ac.in', '2026-03-03 17:38:47'),
-(7, 1, 'sajeer', 'sajeer', '$2y$10$SOn//Kg3.zLu661NjLvdGun1QluhvgzZf1zvl8rVQ1thwYmFCGsQO', 'sajeer@example.com', 'sajeer@example.com', 'sajeer@example.com', '2026-03-05 09:42:27'),
-(18, 1, 'BRIAN PETER BERNARD', '2511', '$2y$10$43I4YKSZD0tAGk5fXggnX.WyKQBvzOTbwSo/1FJG6NL1yRHXHgtky', '2511@tkmce.ac.in', '2511@tkmce.ac.in', '2511@tkmce.ac.in', '2026-03-30 18:25:40');
+INSERT INTO `users` (`id`, `role_id`, `name`, `username`, `password`, `email`, `parent_email`, `teacher_email`, `created_at`, `register_number`) VALUES
+(3, 2, 'Main Warden', 'warden', '$2y$10$93Ul/A1Q2WdhaPnuGZMzJebt.1pCh.uprf/0DvBRbxclxx9l6rkSe', NULL, NULL, NULL, '2026-03-03 13:31:52', NULL),
+(19, 1, 'CS SANATH SREEKUMAR', '2515', '$2y$10$YSXjlab/SrXVQl5GKKdm3OKRlfWD1ccu6CK3cQSa47tIjVpHtvFnW', '2515@tkmce.ac.in', '2511@tkmce.ac.in', '2558@tkmce.ac.in', '2026-04-27 18:26:48', NULL),
+(20, 1, 'BRIAN PETER BERNARD', '2511', '$2y$10$8ZGp/fYEmLOkCxrdtkD.W.6vf3pqc1GW3LVdusvGP.GsvyoBkKGhe', '2515@tkmce.ac.in', '2511@tkmce.ac.in', '2511@tkmce.ac.in', '2026-04-27 19:27:55', NULL),
+(21, 1, 'B SANJAY RAM  ', '2558', '$2y$10$A9/W13/HYCc.ebRbGtvlOuDUr28V.Ompq9W.FT7n/43fEiOmebM0u', '2515@tkmce.ac.in', '2558@tkmce.ac.in', '2558@tkmce.ac.in', '2026-04-27 19:31:41', NULL);
 
 --
 -- Indexes for dumped tables
@@ -287,13 +268,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `attendance`
 --
 ALTER TABLE `attendance`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `hostel_leaves`
 --
 ALTER TABLE `hostel_leaves`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `leave_types`
@@ -317,19 +298,19 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `student_list__mca_2k25`
 --
 ALTER TABLE `student_list__mca_2k25`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables

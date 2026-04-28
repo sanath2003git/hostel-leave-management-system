@@ -2,6 +2,8 @@
 include("../includes/auth_check.php");
 include("../config/db.php");
 
+date_default_timezone_set("Asia/Kolkata");
+
 if ($_SESSION["role"] != "warden") {
     echo "Access Denied";
     exit();

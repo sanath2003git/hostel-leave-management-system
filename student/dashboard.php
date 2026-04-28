@@ -10,16 +10,41 @@ include("../config/db.php");
 
 $user_id = $_SESSION["user_id"];
 
+/* ===== GET REAL STUDENT NAME ===== */
+$student_name = $_SESSION["username"];
+
+$getName = $conn->query("
+SELECT name
+FROM users
+WHERE id='$user_id'
+");
+
+if($row = $getName->fetch_assoc()){
+    $student_name = $row["name"];
+}
+
 /* ===== REAL STATISTICS ===== */
 $pending = 0;
 $approved = 0;
 
-$result1 = $conn->query("SELECT COUNT(*) as total FROM hostel_leaves WHERE student_id='$user_id' AND status='Pending'");
+$result1 = $conn->query("
+SELECT COUNT(*) as total
+FROM hostel_leaves
+WHERE student_id='$user_id'
+AND status='Pending'
+");
+
 if($row = $result1->fetch_assoc()){
     $pending = $row['total'];
 }
 
-$result2 = $conn->query("SELECT COUNT(*) as total FROM hostel_leaves WHERE student_id='$user_id' AND status='Approved'");
+$result2 = $conn->query("
+SELECT COUNT(*) as total
+FROM hostel_leaves
+WHERE student_id='$user_id'
+AND status='Approved'
+");
+
 if($row = $result2->fetch_assoc()){
     $approved = $row['total'];
 }
@@ -47,7 +72,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 padding:120px 60px 60px 60px;
-background: linear-gradient(
+background:linear-gradient(
 135deg,
 #dcdde1 0%,
 #eceef2 40%,
@@ -66,7 +91,7 @@ background:linear-gradient(to bottom, rgba(0,0,0,0.08), transparent);
 pointer-events:none;
 }
 
-/* ===== TOPBAR (MATCHES WARDEN DASHBOARD) ===== */
+/* TOPBAR */
 
 .topbar{
 position:fixed;
@@ -74,25 +99,14 @@ top:0;
 left:0;
 width:100%;
 height:70px;
-
 background:#111;
 color:#fff;
-
 display:flex;
 justify-content:space-between;
 align-items:center;
-
 padding:0 60px;
-
 border-bottom:2px solid #e5e5e5;
-
 z-index:1000;
-}
-
-.logo{
-font-size:18px;
-font-weight:600;
-letter-spacing:0.5px;
 }
 
 .topbar a{
@@ -106,14 +120,14 @@ margin-left:25px;
 opacity:0.8;
 }
 
-/* MAIN DASHBOARD CARD */
+/* DASHBOARD */
 
 .dashboard{
 width:100%;
 max-width:1100px;
 padding:70px;
 border-radius:22px;
-background:#ffffff;
+background:#fff;
 box-shadow:
 0 30px 80px rgba(0,0,0,0.12),
 0 10px 25px rgba(0,0,0,0.08);
@@ -136,7 +150,7 @@ font-size:15px;
 .stats{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:10px;
+gap:20px;
 margin-bottom:60px;
 }
 
@@ -146,23 +160,23 @@ border-radius:18px;
 background:#111;
 color:#fff;
 position:relative;
-
 box-shadow:0 20px 50px rgba(0,0,0,0.35);
-
 transition:0.25s ease;
+}
+
+.stat-card:hover{
+transform:translateY(-5px);
 }
 
 .stat-card h2{
 font-size:44px;
 font-weight:700;
 margin-bottom:6px;
-letter-spacing:-1px;
 }
 
 .stat-card p{
 color:#ccc;
 font-size:14px;
-margin-top:6px;
 }
 
 .stat-card::before{
@@ -176,7 +190,7 @@ background:#fff;
 border-radius:4px;
 }
 
-/* ACTION CARDS */
+/* ACTIONS */
 
 .actions{
 display:grid;
@@ -189,8 +203,9 @@ padding:35px;
 border-radius:18px;
 background:#fff;
 color:#111;
-box-shadow:0 20px 50px rgba(0, 0, 0, 0.25);
+box-shadow:0 20px 50px rgba(0,0,0,0.18);
 transition:0.25s ease;
+border:1px solid #eee;
 }
 
 .action-card:hover{
@@ -199,8 +214,8 @@ transform:translateY(-5px);
 
 .action-card p{
 font-size:14px;
-color:#111;
 margin:18px 0;
+color:#555;
 }
 
 .action-card a{
@@ -209,19 +224,14 @@ padding:10px 18px;
 background:#111;
 color:#fff;
 text-decoration:none;
-border:1px solid #111;
 border-radius:8px;
 font-size:14px;
 font-weight:500;
-transition:0.25s ease;
 }
 
 .action-card a:hover{
 background:#444;
-border-color:#000;
 }
-
-/* DIVIDER */
 
 .divider{
 border:none;
@@ -250,17 +260,18 @@ color:#444;
 <div>Hostel Leave System</div>
 
 <div>
-<a href="profile.php"><?php echo $_SESSION["username"]; ?></a>
- |
+<a href="profile.php"><?php echo htmlspecialchars($student_name); ?></a>
+|
 <a href="../auth/logout.php">Logout</a>
 </div>
 
 </div>
 
+<!-- DASHBOARD -->
 
 <div class="dashboard">
 
-<h1>Welcome, <?php echo $_SESSION["username"]; ?></h1>
+<h1>Welcome, <?php echo htmlspecialchars($student_name); ?></h1>
 
 <div class="subtitle">
 Manage your hostel leave efficiently with a modern digital system.
@@ -269,8 +280,6 @@ Manage your hostel leave efficiently with a modern digital system.
 <hr class="divider">
 
 <h3 class="section-title">Overview</h3>
-
-<!-- STATISTICS -->
 
 <div class="stats">
 
@@ -285,9 +294,6 @@ Manage your hostel leave efficiently with a modern digital system.
 </div>
 
 </div>
-
-
-<!-- ACTIONS -->
 
 <div class="actions">
 

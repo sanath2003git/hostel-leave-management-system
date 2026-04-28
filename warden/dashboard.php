@@ -265,10 +265,10 @@ color:#777;
 <p><?php echo $late_students; ?></p>
 </div>
 
-<div class="stat">
+<!-- <div class="stat">
 <h3>↩ Returned Today</h3>
 <p><?php echo $returned_today; ?></p>
-</div>
+</div> -->
 
 </div>
 
