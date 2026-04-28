@@ -246,22 +246,22 @@ color:#777;
 <div class="stats">
 
 <div class="stat">
-<h3>📝 Total Requests</h3>
+<h3> Total Requests</h3>
 <p><?php echo $total_requests; ?></p>
 </div>
 
 <div class="stat">
-<h3>⏳ Pending Requests</h3>
+<h3> Pending Requests</h3>
 <p><?php echo $pending; ?></p>
 </div>
 
 <div class="stat">
-<h3>🔴 Students Outside</h3>
+<h3> Students Outside</h3>
 <p><?php echo $out_students; ?></p>
 </div>
 
 <div class="stat">
-<h3>⚠️ Late Students</h3>
+<h3> Late Students</h3>
 <p><?php echo $late_students; ?></p>
 </div>
 
@@ -279,43 +279,43 @@ color:#777;
 <div class="card">
 <h3>Leave Requests</h3>
 <p>Approve or reject student leave requests.</p>
-<a href="view_requests.php">Open</a>
+<a href="view_requests.php">View Requests</a>
 </div>
 
 <div class="card">
 <h3>Students Outside</h3>
 <p>Monitor current outside and returned students.</p>
-<a href="out_students.php">Open</a>
+<a href="out_students.php">View Students</a>
 </div>
 
 <div class="card">
 <h3>Attendance</h3>
 <p>Mark daily attendance for hostel students.</p>
-<a href="attendance.php">Open</a>
+<a href="attendance.php">Mark Attendance</a>
 </div>
 
 <div class="card">
 <h3>Reports</h3>
 <p>View leave analytics and occupancy reports.</p>
-<a href="reports.php">Open</a>
+<a href="reports.php">View Report</a>
 </div>
 
 <div class="card">
 <h3>Students</h3>
 <p>View, edit and manage student records.</p>
-<a href="view_students.php">Open</a>
+<a href="view_students.php">Edit Student</a>
 </div>
 
 <div class="card">
 <h3>Add Student</h3>
 <p>Register new student accounts.</p>
-<a href="add_student.php">Open</a>
+<a href="add_student.php">Register New Student</a>
 </div>
 
 <div class="card">
 <h3>Late Students</h3>
 <p>Track students who returned after deadline.</p>
-<a href="late_students.php">Open</a>
+<a href="late_students.php">Track Students</a>
 </div>
 
 </div>

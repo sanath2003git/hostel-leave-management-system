@@ -281,72 +281,72 @@ color:#777;
 <div class="grid">
 
 <div class="card">
-<h3>👨‍🎓 Total Students</h3>
+<h3> Total Students</h3>
 <p><?php echo $total_students; ?></p>
 </div>
 
 <div class="card">
-<h3>📝 Leave Applications</h3>
+<h3> Leave Applications</h3>
 <p><?php echo $total_leaves; ?></p>
 </div>
 
 <div class="card green">
-<h3>✅ Approved Leaves</h3>
+<h3> Approved Leaves</h3>
 <p><?php echo $approved; ?></p>
 </div>
 
 <div class="card blue">
-<h3>⏳ Pending Leaves</h3>
+<h3> Pending Leaves</h3>
 <p><?php echo $pending; ?></p>
 </div>
 
 <div class="card lightred">
-<h3>❌ Rejected Leaves</h3>
+<h3> Rejected Leaves</h3>
 <p><?php echo $rejected; ?></p>
 </div>
 
 <div class="card red">
-<h3>🔴 Students Outside</h3>
+<h3> Students Outside</h3>
 <p><?php echo $out_students; ?></p>
 </div>
 
 <div class="card green">
-<h3>🟢 In Hostel</h3>
+<h3> In Hostel</h3>
 <p><?php echo $in_students; ?></p>
 </div>
 
 <div class="card lightred">
-<h3>⚠️ Late Students</h3>
+<h3> Late Students</h3>
 <p><?php echo $late_students; ?></p>
 </div>
 
 <div class="card yellow">
-<h3>🍽️ Active Mess Cuts</h3>
+<h3> Active Mess Cuts</h3>
 <p><?php echo $mess_cut_active; ?></p>
 </div>
 
 <div class="card">
-<h3>📅 Today Requests</h3>
+<h3> Today Requests</h3>
 <p><?php echo $today_requests; ?></p>
 </div>
 
 <div class="card green">
-<h3>↩ Returned Today</h3>
+<h3>Returned Today</h3>
 <p><?php echo $returned_today; ?></p>
 </div>
 
 <div class="card red">
-<h3>🚨 Returned Late</h3>
+<h3> Returned Late</h3>
 <p><?php echo $returned_late; ?></p>
 </div>
 
 <div class="card">
-<h3>📈 Approval Rate</h3>
+<h3> Approval Rate</h3>
 <p><?php echo $approval_rate; ?>%</p>
 </div>
 
 <div class="card">
-<h3>🏨 Occupancy</h3>
+<h3> Occupancy</h3>
 <p><?php echo $occupancy; ?>%</p>
 </div>
 
