@@ -9,7 +9,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST["username"]);
     $password = trim($_POST["password"]);
 
-    // Secure prepared statement with JOIN
     $stmt = $conn->prepare("
         SELECT users.*, roles.role_name 
         FROM users 
@@ -26,10 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $user = $result->fetch_assoc();
 
-        // 🔐 SECURE PASSWORD CHECK
         if (password_verify($password, $user["password"])) {
 
-            // Regenerate session ID (security best practice)
             session_regenerate_id(true);
 
             $_SESSION["user_id"] = $user["id"];
@@ -54,127 +51,117 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->close();
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
+<title>Login</title>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        body {
-            background: #f3f3f3;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+<style>
 
-        .login-wrapper {
-            width: 900px;
-            height: 550px;
-            display: flex;
-            background: #fff;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
 
-        .login-left {
-            width: 50%;
-            padding: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+body{
+background:#f3f3f3;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding-top:80px;
+}
 
-        .login-left h2 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
+/* NAVBAR */
 
-        .login-left p {
-            color: #777;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
+.navbar{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:70px;
+background:#111;
+color:#fff;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:0 50px;
+z-index:1000;
+box-shadow:0 8px 20px rgba(0,0,0,0.15);
+}
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+.logo{
+font-size:22px;
+font-weight:600;
+letter-spacing:0.5px;
+}
 
-        .form-group label {
-            font-size: 13px;
-            color: #555;
-        }
+.tagline{
+font-size:13px;
+color:#ddd;
+}
 
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-top: 5px;
-        }
+/* LOGIN BOX */
 
-        .form-options {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
+.login-wrapper{
+width:900px;
+height:550px;
+display:flex;
+background:#fff;
+border-radius:18px;
+overflow:hidden;
+box-shadow:0 20px 40px rgba(0,0,0,0.15);
+}
 
-        .form-options a {
-            text-decoration: none;
-            color: #000;
-        }
+.login-left{
+width:50%;
+padding:60px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
 
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: #000;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+.login-left h2{
+font-size:28px;
+margin-bottom:10px;
+}
 
-        .btn-login:hover {
-            background: #333;
-        }
+.login-left p{
+color:#777;
+margin-bottom:30px;
+font-size:14px;
+}
 
-        .error-msg {
-            color: red;
-            font-size: 13px;
-            margin-bottom: 15px;
-        }
+.form-group{
+margin-bottom:20px;
+}
 
-        .login-right {
-            width: 50%;
-            background: url('../assets/images/tkm.jpg') center/cover no-repeat;
-        }
+.form-group label{
+font-size:13px;
+color:#555;
+display:block;
+margin-bottom:6px;
+}
 
-        @media(max-width: 900px) {
-            .login-wrapper {
-                flex-direction: column;
-                width: 90%;
-                height: auto;
-            }
+.form-group input{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:10px;
+outline:none;
+font-size:15px;
+}
 
-            .login-left,
-            .login-right {
-                width: 100%;
-                padding: 40px;
-            }
-        }
+.form-group input:focus{
+border-color:#111;
+}
 
-        /* PASSWORD BOX */
+/* PASSWORD */
 
 .password-box{
 position:relative;
@@ -182,12 +169,7 @@ width:100%;
 }
 
 .password-box input{
-width:100%;
-padding:14px 45px 14px 14px;
-border:1px solid #ddd;
-border-radius:12px;
-outline:none;
-font-size:16px;
+padding-right:45px;
 }
 
 .eye-btn{
@@ -200,59 +182,145 @@ font-size:18px;
 user-select:none;
 }
 
-    </style>
+/* OPTIONS */
+
+.form-options{
+display:flex;
+justify-content:space-between;
+font-size:13px;
+margin-bottom:20px;
+}
+
+.form-options a{
+text-decoration:none;
+color:#000;
+}
+
+/* BUTTON */
+
+.btn-login{
+width:100%;
+padding:12px;
+background:#000;
+color:#fff;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-size:15px;
+font-weight:500;
+transition:0.3s;
+}
+
+.btn-login:hover{
+background:#333;
+}
+
+/* ERROR */
+
+.error-msg{
+color:red;
+font-size:13px;
+margin-bottom:15px;
+}
+
+/* IMAGE */
+
+.login-right{
+width:50%;
+background:url('../assets/images/tkm.jpg') center/cover no-repeat;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+.login-wrapper{
+flex-direction:column;
+width:95%;
+height:auto;
+}
+
+.login-left,
+.login-right{
+width:100%;
+}
+
+.login-right{
+height:260px;
+}
+
+.navbar{
+padding:0 20px;
+}
+
+.logo{
+font-size:16px;
+}
+
+.tagline{
+display:none;
+}
+
+}
+
+</style>
 </head>
+
 <body>
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+<div class="logo">Hostel Leave Management System</div>
+<div class="tagline">MCA Project</div>
+</div>
+
+<!-- LOGIN -->
 
 <div class="login-wrapper">
 
-    <div class="login-left">
+<div class="login-left">
 
-        <h2>Welcome back</h2>
-        <p>Please enter your details.</p>
+<h2>Welcome back</h2>
+<p>Please enter your details.</p>
 
-        <?php if(!empty($error)): ?>
-            <div class="error-msg"><?php echo htmlspecialchars($error); ?></div>
-        <?php endif; ?>
+<?php if(!empty($error)): ?>
+<div class="error-msg"><?php echo htmlspecialchars($error); ?></div>
+<?php endif; ?>
 
-        <form method="POST">
+<form method="POST">
 
-            <div class="form-group">
-                <label>User Name</label>
-                <input type="text" name="username" required>
-            </div>
+<div class="form-group">
+<label>User Name</label>
+<input type="text" name="username" required>
+</div>
 
-            <div class="form-group">
-                <!-- PASSWORD FIELD -->
-<div class="input-group">
+<div class="form-group">
 
 <label>Password</label>
 
 <div class="password-box">
-
 <input type="password" name="password" id="password" placeholder="Enter Password" required>
-
-<span class="eye-btn" id="eye" onclick="togglePassword()"><img src="eyebrow.svg" alt="icon" style="width:20px; height:20px;"></span>
-
+<span class="eye-btn" id="eye" onclick="togglePassword()">👁</span>
 </div>
 
 </div>
-            </div>
 
-            <div class="form-options">
-                <label><input type="checkbox"> Remember me</label>
-                <a href="#">Forgot Password</a>
-            </div>
+<div class="form-options">
+<label><input type="checkbox"> Remember me</label>
+<a href="#">Forgot Password</a>
+</div>
 
-            <button type="submit" class="btn-login">Submit</button>
+<button type="submit" class="btn-login">Submit</button>
 
-        </form>
-
-    </div>
-
-    <div class="login-right"></div>
+</form>
 
 </div>
+
+<div class="login-right"></div>
+
+</div>
+
 <script>
 function togglePassword(){
 
@@ -260,11 +328,11 @@ let password = document.getElementById("password");
 let eye = document.getElementById("eye");
 
 if(password.type === "password"){
-    password.type = "text";
-    eye.innerHTML = "👁" ;
+password.type = "text";
+eye.innerHTML = "🙈";
 }else{
-    password.type = "password";
-    eye.innerHTML = '<img src="eyebrow.svg" alt="icon" style="width:20px; height:20px;">';
+password.type = "password";
+eye.innerHTML = "👁";
 }
 
 }
