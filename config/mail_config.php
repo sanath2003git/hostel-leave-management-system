@@ -20,16 +20,16 @@ function sendMail($to, $subject, $body)
         $mail->SMTPAuth   = true;
 
         // 🔹 Replace with your project Gmail
-        $mail->Username   = 'hostelleavesystem2026@gmail.com';
+        $mail->Username   = 'Projectmail';
 
         // 🔹 Replace with your 16-digit app password (NO SPACES)
-        $mail->Password   = 'mfcckccnispomwtd';#app password 
+        $mail->Password   = 'app password'; 
 
         $mail->SMTPSecure = 'tls';
         $mail->Port       = 587;
 
         // Email Settings
-        $mail->setFrom('hostelleavesystem2026@gmail.com', 'Hostel Leave System');
+        $mail->setFrom('Projectmail', 'Hostel Leave System');
         $mail->addAddress($to);
 
         $mail->isHTML(true);
